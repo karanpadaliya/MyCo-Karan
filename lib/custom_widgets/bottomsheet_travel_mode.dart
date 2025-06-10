@@ -97,7 +97,7 @@ class _OutOfRangeBottomSheetState extends State<OutOfRangeBottomSheet>
         height:
             widget.height ??
             MediaQuery.of(context).size.height *
-                (_isKeyboardVisible ? 0.6 : 0.8),
+                (_isKeyboardVisible ? 0.5 : 0.8),
         width: widget.width ?? MediaQuery.of(context).size.width,
         padding: const EdgeInsets.all(20),
         decoration: const BoxDecoration(
@@ -239,7 +239,7 @@ class _OutOfRangeBottomSheetState extends State<OutOfRangeBottomSheet>
                             });
                           },
                           child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 6),
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 5),
                             child: Container(
                               padding: const EdgeInsets.all(3),
                               decoration: BoxDecoration(
@@ -488,7 +488,7 @@ class _OutOfRangeBottomSheetState extends State<OutOfRangeBottomSheet>
   void openImagePicker(BuildContext context) async {
     final File? selectedFile = await showImageFilePicker(
       context: context,
-      selectDocument: true,
+      // selectDocument: true,
     );
 
     if (selectedFile != null) {
