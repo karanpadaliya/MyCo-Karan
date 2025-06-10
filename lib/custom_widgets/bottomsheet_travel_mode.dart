@@ -108,6 +108,7 @@ class _OutOfRangeBottomSheetState extends State<OutOfRangeBottomSheet>
           behavior: HitTestBehavior.opaque,
           onTap: () => FocusScope.of(context).unfocus(),
           child: SingleChildScrollView(
+            physics: BouncingScrollPhysics(),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
@@ -238,7 +239,10 @@ class _OutOfRangeBottomSheetState extends State<OutOfRangeBottomSheet>
                             });
                           },
                           child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 5),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 5,
+                            ),
                             child: Container(
                               padding: const EdgeInsets.all(3),
                               decoration: BoxDecoration(
