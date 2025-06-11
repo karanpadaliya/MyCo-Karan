@@ -11,23 +11,25 @@ class ColorRange {
 }
 
 class SegmentedProgressBar extends StatefulWidget {
-  final double? maxMinutes;
+  final double maxMinutes;
   final double minutesPerSegment;
   final double strokeWidth;
   final double sectionGap;
   final Color backgroundColor;
   final Color primaryColor;
   final List<ColorRange> colorRanges;
+  final VoidCallback? onCompleted;
 
   const SegmentedProgressBar({
     Key? key,
-    this.maxMinutes,
-    this.minutesPerSegment = 60,
+    this.maxMinutes = 10,
+    this.minutesPerSegment = 2,
     this.strokeWidth = 20,
     this.sectionGap = 2,
     this.backgroundColor = Colors.grey,
     this.primaryColor = Colors.teal,
     this.colorRanges = const [],
+    this.onCompleted,
   }) : super(key: key);
 
   @override
@@ -36,25 +38,26 @@ class SegmentedProgressBar extends StatefulWidget {
 
 class _SegmentedProgressBarState extends State<SegmentedProgressBar> {
   late Timer _timer;
-  late double currentMinutes;
-
-  double get maxMinutes => widget.maxMinutes ?? 60;
+  double currentMinutes = 0;
 
   @override
   void initState() {
     super.initState();
-    currentMinutes = _getCurrentMinutes();
-
-    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      setState(() {
-        currentMinutes = _getCurrentMinutes();
-      });
-    });
+    _startTimer();
   }
 
-  double _getCurrentMinutes() {
-    final now = DateTime.now();
-    return (now.minute % maxMinutes) + now.second / 60;
+  void _startTimer() {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      setState(() {
+        currentMinutes += 1 / 60.0; // 1 second = 1/60 minute
+
+        if (currentMinutes >= widget.maxMinutes) {
+          currentMinutes = widget.maxMinutes;
+          _timer.cancel();
+          widget.onCompleted?.call();
+        }
+      });
+    });
   }
 
   @override
@@ -65,11 +68,10 @@ class _SegmentedProgressBarState extends State<SegmentedProgressBar> {
 
   @override
   Widget build(BuildContext context) {
-    final now = DateTime.now();
-    final timeText =
-        "${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}";
-
-    final clampedMinutes = currentMinutes.clamp(0, maxMinutes).toDouble();
+    final totalSeconds = (currentMinutes * 60).toInt();
+    final displayMinutes = (totalSeconds ~/ 60).toString().padLeft(2, '0');
+    final displaySeconds = (totalSeconds % 60).toString().padLeft(2, '0');
+    final timeText = "$displayMinutes:$displaySeconds";
 
     return SizedBox(
       width: 250,
@@ -80,8 +82,8 @@ class _SegmentedProgressBarState extends State<SegmentedProgressBar> {
           CustomPaint(
             size: const Size.square(250),
             painter: _SegmentedProgressBarPainter(
-              maxMinutes: maxMinutes,
-              currentMinutes: clampedMinutes,
+              maxMinutes: widget.maxMinutes,
+              currentMinutes: currentMinutes,
               minutesPerSegment: widget.minutesPerSegment,
               strokeWidth: widget.strokeWidth,
               sectionGap: widget.sectionGap,
@@ -153,7 +155,7 @@ class _SegmentedProgressBarPainter extends CustomPainter {
       min(minutesPerSegment, maxMinutes - segmentStartMinutes);
       final segmentAngle = segmentDuration * anglePerMinute;
 
-      // Draw background segment
+      // Draw segment background
       canvas.drawArc(
         rect,
         _degToRad(globalStartAngle),
@@ -162,28 +164,29 @@ class _SegmentedProgressBarPainter extends CustomPainter {
         backgroundPaint,
       );
 
-      // Draw colored progress for segment
+      // Draw progress in this segment
       double localStartAngle = globalStartAngle;
+      double m = segmentStartMinutes;
 
-      for (double m = segmentStartMinutes;
-      m < segmentStartMinutes + segmentDuration;
-      m++) {
+      while (m < segmentStartMinutes + segmentDuration) {
         if (m >= currentMinutes) break;
 
-        final minuteAngle = anglePerMinute;
         final color = _findColorForMinute(m) ?? primaryColor;
-
         colorPaint.color = color;
+
+        double progress = min(1.0, currentMinutes - m);
+        double sweepAngle = anglePerMinute * progress;
 
         canvas.drawArc(
           rect,
           _degToRad(localStartAngle),
-          _degToRad(minuteAngle),
+          _degToRad(sweepAngle),
           false,
           colorPaint,
         );
 
-        localStartAngle += minuteAngle;
+        localStartAngle += sweepAngle;
+        m += progress;
       }
 
       globalStartAngle += segmentAngle + sectionGap;

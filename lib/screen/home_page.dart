@@ -42,17 +42,19 @@ class _HomePageState extends State<HomePage> {
             children: [
               const SizedBox(height: 40),
               SegmentedProgressBar(
-                maxMinutes: 60,
-                minutesPerSegment: 10,
-                strokeWidth: 20,
-                sectionGap: 2,
+                maxMinutes: 10,
+                minutesPerSegment: 2,
+                strokeWidth: 15,
+                sectionGap: 4,
                 backgroundColor: Colors.grey.shade300,
-                primaryColor: Colors.teal,
                 colorRanges: [
-                  ColorRange(9, 12, Colors.red),
-                  ColorRange(18, 25, Colors.orange),
+                  // ColorRange(0, 2, Colors.green),
+                  ColorRange(1, 4, Colors.yellow),
+                  ColorRange(4, 6, Colors.orange),
+                  ColorRange(6, 10, Colors.red),
                 ],
               ),
+
 
 
               // SegmentedCircularTimer(),
