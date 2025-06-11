@@ -255,8 +255,8 @@ import 'package:flutter/material.dart';
 import 'package:myco_karan/custom_widgets/responsive.dart';
 import 'package:myco_karan/custom_widgets/text_field.dart';
 import '../themes_colors/colors.dart';
-import 'new_myco_button.dart';
-import 'new_myco_button_theme.dart';
+import '../karan_file/new_myco_button.dart';
+import '../karan_file/new_myco_button_theme.dart';
 
 class BottomsheetRadioButton extends StatefulWidget {
   final List<Map<String, String>> items;
@@ -471,10 +471,9 @@ class _BottomsheetRadioButtonState extends State<BottomsheetRadioButton> {
             children: [
               Expanded(
                 child: MyCoButton(
-                  isShadow: false,
                   title: 'Close',
                   width: getWidth(context) * .450,
-                  colorBackground: AppColors.white,
+                  backgroundColor: AppColors.white,
                   border: Border.all(color: AppColors.primary, width: 2),
                   textStyle: MyCoButtonTheme.getWhiteBackgroundTextStyle(
                     context,

@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../themes_colors/app_theme.dart';
 import '../themes_colors/colors.dart';
-import 'new_myco_button.dart';
+import '../karan_file/new_myco_button.dart';
 
 void showCustomEmailVerificationSheet({
   required BuildContext context,
@@ -294,6 +294,11 @@ class _OTPInputFieldState extends State<OTPInputField> {
                 counterText: '',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: AppColors.primary),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: AppColors.primary,width: 2),
                 ),
                 contentPadding: const EdgeInsets.symmetric(vertical: 10),
               ),

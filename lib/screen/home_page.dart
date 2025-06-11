@@ -1,22 +1,21 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
-import 'package:myco_karan/custom_widgets/custom_active_assets.dart';
-import 'package:myco_karan/custom_widgets/custom_calender.dart';
+import 'package:marquee/marquee.dart';
 import '../custom_widgets/bottomsheet_otp.dart';
 import '../custom_widgets/bottomsheet_radio_btn.dart';
 import '../custom_widgets/bottomsheet_travel_mode.dart';
-import '../custom_widgets/custom_all_assets.dart';
-import '../custom_widgets/custom_assets_history.dart';
-import '../custom_widgets/custom_assets_holder.dart';
-import '../custom_widgets/custom_past_assets.dart';
-import '../custom_widgets/new_myco_button.dart';
+import '../karan_file/new_myco_button.dart';
 import '../main.dart';
 import '../maulik_file/current_opening_card.dart';
+import '../maulik_file/ios_calendar_time_picker.dart';
+import '../maulik_file/qr_scanner_page.dart';
+import '../maulik_file/see_less_more_widget.dart';
 import '../maulik_file/wfh_box.dart';
 import '../maulik_file/work_report_add_box.dart';
 import '../maulik_file/work_report_history_box.dart';
 import '../themes_colors/colors.dart';
+import '../tirth_file/custom_calendar.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -26,6 +25,8 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  String scannedResult = 'ScannerData';
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -39,13 +40,11 @@ class _HomePageState extends State<HomePage> {
                 padding: const EdgeInsets.all(8.0),
                 child: ImageGridPreviewWidget(
                   imageList: [
-                    "https://www.shutterstock.com/image-photo/very-random-pose-asian-men-260nw-2423213779.jpg",
-                    "https://media.istockphoto.com/id/178967977/photo/mature-african-man-laughing.jpg?s=612x612&w=0&k=20&c=uAbwJFQCjzQBUgy4Z003iY_HA94VK50iTbxsOl_UoRc=",
-                    "https://plus.unsplash.com/premium_photo-1682000436148-88a145551f50?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8ZHVsbHxlbnwwfHwwfHx8MA%3D%3D",
-                    "https://media.istockphoto.com/id/1618846975/photo/smile-black-woman-and-hand-pointing-in-studio-for-news-deal-or-coming-soon-announcement-on.jpg?s=612x612&w=0&k=20&c=LUvvJu4sGaIry5WLXmfQV7RStbGG5hEQNo8hEFxZSGY=",
-                    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRxglj3iwmlB9Y9oZBH3qicAgZcnj6dtdHN2Q&s",
-                    "https://www.shutterstock.com/image-photo/very-random-pose-asian-men-260nw-2423213779.jpg",
-                    "https://www.shutterstock.com/image-photo/handsome-indonesian-southeast-asian-man-260nw-2476654675.jpg",
+                    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcScGtiKpXZ_FM45KQwYycH4jjImU6ja0jpz6Sw38tr3UxtgcWyDJAkRA4pbgxhv2dI2dZ8&usqp=CAU",
+                    "https://c4.wallpaperflare.com/wallpaper/151/18/347/car-lamborghini-dark-wallpaper-preview.jpg",
+                    "https://nemesisuk.com/cdn/shop/files/RoushTrakPakLifestyleShoot32-XL_6aea9414-75fc-4c98-9dcb-6b97dd2df1f2.jpg?v=1716301158",
+                    "https://c4.wallpaperflare.com/wallpaper/217/249/131/lamborghini-aventador-sports-car-cool-black-car-wallpaper-preview.jpg",
+                    "https://bugatti-newsroom.imgix.net/fc5cfcbe-f01f-4ee2-b664-d26ed3ca11db/01_LVN_34-Front",
                   ],
                   boxHeight: 120,
                   boxWidth: 120,
@@ -57,6 +56,11 @@ class _HomePageState extends State<HomePage> {
               MyCoButton(
                 title: "Travel mode Bottom Sheet",
                 boarderRadius: 50,
+                isShadowBottomLeft: true,
+                isShadowBottomRight: true,
+                textStyle: TextStyle(color: AppColors.primary),
+                backgroundColor: AppColors.white,
+                borderColor: Colors.blue,
                 onTap: () {
                   showModalBottomSheet(
                     context: context,
@@ -71,6 +75,7 @@ class _HomePageState extends State<HomePage> {
               MyCoButton(
                 title: "Travel mode Alert dialog",
                 boarderRadius: 50,
+                isShadowBottomLeft: true,
                 onTap: () {
                   showDialog(
                     context: context,
@@ -92,6 +97,7 @@ class _HomePageState extends State<HomePage> {
               MyCoButton(
                 title: "BottomSheet RadioButton Alert",
                 boarderRadius: 50,
+                isShadowBottomRight: true,
                 onTap: () {
                   showDialog(
                     context: context,
@@ -107,13 +113,13 @@ class _HomePageState extends State<HomePage> {
                               "id": "1",
                               "title": "Delta Corporation Pvt. Ltd",
                               "subtitle":
-                              "A-305 3rd Floor Azure Corporation Trade Tower Starlight Sarkhej, Ahmedabad Gujarat 380042",
+                                  "A-305 3rd Floor Azure Corporation Trade Tower Starlight Sarkhej, Ahmedabad Gujarat 380042",
                             },
                             {
                               "id": "2",
                               "title": "Communities heritage Pvt. Ltd",
                               "subtitle":
-                              "A-Block, 5th Floor, WTT, World Trade Tower, Makarba, Sarkhej, Ahmedabad Gujarat 380051",
+                                  "A-Block, 5th Floor, WTT, World Trade Tower, Makarba, Sarkhej, Ahmedabad Gujarat 380051",
                             },
                           ],
                         ),
@@ -127,53 +133,55 @@ class _HomePageState extends State<HomePage> {
               MyCoButton(
                 title: "BottomSheet RadioButton",
                 boarderRadius: 50,
+                isShadowTopLeft: true,
                 onTap: () {
                   showModalBottomSheet(
                     context: context,
                     isScrollControlled: true,
                     backgroundColor: Colors.transparent,
-                    builder: (_) => BottomsheetRadioButton(
-                      image: AssetImage("assets/tiger.jpeg"),
-                      showSnackBar: true,
-                      items: [
-                        {
-                          "id": "1",
-                          "title": "Delta Corporation Pvt. Ltd",
-                          "subtitle":
-                          "A-305 3rd Floor Azure Corporation Trade Tower Starlight Sarkhej, Ahmedabad Gujarat 380042",
-                        },
-                        {
-                          "id": "2",
-                          "title": "Communities heritage Pvt. Ltd",
-                          "subtitle":
-                          "A-Block, 5th Floor, WTT, World Trade Tower, Makarba, Sarkhej, Ahmedabad Gujarat 380051",
-                        },
-                        {
-                          "id": "3",
-                          "title": "Belta Corporation Pvt. Ltd",
-                          "subtitle":
-                          "A-305 3rd Floor Azure Corporation Trade Tower Starlight Sarkhej, Ahmedabad Gujarat 380042",
-                        },
-                        {
-                          "id": "4",
-                          "title": "Zommunities heritage Pvt. Ltd",
-                          "subtitle":
-                          "A-Block, 5th Floor, WTT, World Trade Tower, Makarba, Sarkhej, Ahmedabad Gujarat 380051",
-                        },
-                        {
-                          "id": "5",
-                          "title": "Aelta Corporation Pvt. Ltd",
-                          "subtitle":
-                          "A-305 3rd Floor Azure Corporation Trade Tower Starlight Sarkhej, Ahmedabad Gujarat 380042",
-                        },
-                        {
-                          "id": "6",
-                          "title": "Jommunities heritage Pvt. Ltd",
-                          "subtitle":
-                          "A-Block, 5th Floor, WTT, World Trade Tower, Makarba, Sarkhej, Ahmedabad Gujarat 380051",
-                        },
-                      ],
-                    ),
+                    builder:
+                        (_) => BottomsheetRadioButton(
+                          image: AssetImage("assets/tiger.jpeg"),
+                          showSnackBar: true,
+                          items: [
+                            {
+                              "id": "1",
+                              "title": "Delta Corporation Pvt. Ltd",
+                              "subtitle":
+                                  "A-305 3rd Floor Azure Corporation Trade Tower Starlight Sarkhej, Ahmedabad Gujarat 380042",
+                            },
+                            {
+                              "id": "2",
+                              "title": "Communities heritage Pvt. Ltd",
+                              "subtitle":
+                                  "A-Block, 5th Floor, WTT, World Trade Tower, Makarba, Sarkhej, Ahmedabad Gujarat 380051",
+                            },
+                            {
+                              "id": "3",
+                              "title": "Belta Corporation Pvt. Ltd",
+                              "subtitle":
+                                  "A-305 3rd Floor Azure Corporation Trade Tower Starlight Sarkhej, Ahmedabad Gujarat 380042",
+                            },
+                            {
+                              "id": "4",
+                              "title": "Zommunities heritage Pvt. Ltd",
+                              "subtitle":
+                                  "A-Block, 5th Floor, WTT, World Trade Tower, Makarba, Sarkhej, Ahmedabad Gujarat 380051",
+                            },
+                            {
+                              "id": "5",
+                              "title": "Aelta Corporation Pvt. Ltd",
+                              "subtitle":
+                                  "A-305 3rd Floor Azure Corporation Trade Tower Starlight Sarkhej, Ahmedabad Gujarat 380042",
+                            },
+                            {
+                              "id": "6",
+                              "title": "Jommunities heritage Pvt. Ltd",
+                              "subtitle":
+                                  "A-Block, 5th Floor, WTT, World Trade Tower, Makarba, Sarkhej, Ahmedabad Gujarat 380051",
+                            },
+                          ],
+                        ),
                   );
                 },
               ),
@@ -181,6 +189,8 @@ class _HomePageState extends State<HomePage> {
               MyCoButton(
                 title: "Otp BottomSheet",
                 boarderRadius: 50,
+                isShadowTopRight: true,
+
                 onTap: () {
                   showCustomEmailVerificationSheet(
                     context: context,
@@ -195,7 +205,7 @@ class _HomePageState extends State<HomePage> {
               const SizedBox(height: 50),
 
               MyCoButton(
-                title: "Press meeee for otp  dialogue",
+                title: "Otp  Dialogue",
                 boarderRadius: 50,
                 onTap: () {
                   showCustomEmailVerificationSheet(
@@ -211,38 +221,143 @@ class _HomePageState extends State<HomePage> {
               ),
               const SizedBox(height: 50),
 
+              // MyCoButton(
+              //   title: "Calender Range Selection",
+              //   boarderRadius: 50,
+              //   onTap: () {
+              //     showDialog(
+              //       context: context,
+              //       builder: (context) {
+              //         return AlertDialog(
+              //           contentPadding: EdgeInsets.zero,
+              //           shape: RoundedRectangleBorder(
+              //             borderRadius: BorderRadius.circular(12),
+              //           ),
+              //           backgroundColor: AppColors.white,
+              //           content: CustomCalendar(
+              //             totalPreviousYear: 0,
+              //             totalNextYear: 0,
+              //             isMultipleSelection: false,
+              //             isRangeSelectionMode: true,
+              //           ),
+              //         );
+              //       },
+              //     );
+              //   },
+              // ),
+              // const SizedBox(height: 50),
+              // MyCoButton(
+              //   title: "Calender Multi Selection",
+              //   boarderRadius: 50,
+              //   onTap: () {
+              //     showDialog(
+              //       context: context,
+              //       builder: (context) {
+              //         return AlertDialog(
+              //           contentPadding: EdgeInsets.zero,
+              //           shape: RoundedRectangleBorder(
+              //             borderRadius: BorderRadius.circular(12),
+              //           ),
+              //           backgroundColor: AppColors.white,
+              //           content: CustomCalendar(
+              //             totalPreviousYear: 0,
+              //             totalNextYear: 0,
+              //             isMultipleSelection: true,
+              //             isRangeSelectionMode: false,
+              //           ),
+              //         );
+              //       },
+              //     );
+              //   },
+              // ),
               MyCoButton(
-                title: "Press meeee for calender",
+                title: "Calender",
                 boarderRadius: 50,
                 onTap: () {
-                  showDialog(
+                  showModalBottomSheet(
                     context: context,
                     builder: (context) {
-                      return AlertDialog(
-                        contentPadding: EdgeInsets.zero,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        backgroundColor: AppColors.white,
-                        content: CustomCalendar(
-                          totalPreviousYear: 0,
-                          totalNextYear: 0,
-                          isRangeSelectionMode: true,
-                          preselectSaturdays: true,
-                          preselectSundays: true,
-                          customDatesAsSelected: [
-                            DateTime(2025, 6, 2),
-                            DateTime(2025, 6, 10),
-                          ],
-                        ),
-                      );
+                      return CustomCalendar();
                     },
                   );
                 },
               ),
               const SizedBox(height: 50),
 
-              MyCoButton(boarderRadius: 50, title: 'Testing', onTap: () {}),
+              Container(
+                height: 50,
+                width: double.infinity,
+                color: Colors.amberAccent,
+                child: Marquee(
+                  text: '🔥 Welcome to Flutter Marquee Widget Example! 🚀   ',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                  // scrollAxis: Axis.horizontal,
+                  // crossAxisAlignment: CrossAxisAlignment.center,
+                  blankSpace: 60.0,
+                  velocity: 100.0,
+                  // pauseAfterRound: Duration(seconds: 1),
+                  // startPadding: 10.0,
+                  // accelerationDuration: Duration(seconds: 1),
+                  accelerationCurve: Curves.linear,
+                  // decelerationDuration: Duration(milliseconds: 500),
+                  decelerationCurve: Curves.easeOut,
+                ),
+              ),
+              const SizedBox(height: 20),
+              MyCoButton(
+                onTap: () async {
+                  final result = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const QRScannerPage(),
+                    ),
+                  );
+
+                  if (result != null) {
+                    setState(() {
+                      scannedResult = result;
+                      log('Scanned Data: $result');
+                    });
+                  }
+                },
+                title: scannedResult,
+              ),
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  Expanded(
+                    child: DialDatePickerWidget(
+                      // minDate: DateTime(2020, 1),
+                      // maxDate: DateTime(2026, 12),
+                      initialDate: DateTime(2025, 5, 26),
+                      timePicker: true,
+                      // use24hFormat: true,
+                      pickDay: false,
+                      onSubmit: (date) {
+                        log('User selected: $date');
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 20),
+                  Expanded(
+                    child: DialDatePickerWidget(
+                      // minDate: DateTime(2020, 1),
+                      // maxDate: DateTime(2026, 12),
+                      initialDate: DateTime(2025, 5, 26),
+                      // pickDay: false,
+                      onSubmit: (date) {
+                        debugPrint('User selected: $date');
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              const ExpandableText(
+                shortText: 'This is a preview of the text',
+                longText:
+                    ' that is initially visible. Here is the additional content that becomes visible when expanded.',
+              ),
               const SizedBox(height: 20),
               CurrentOpeningCard(
                 boxColor: AppColors.GPSMediumColor,
@@ -285,12 +400,16 @@ class _HomePageState extends State<HomePage> {
               const SizedBox(height: 20),
               LeaveDetailsCard(
                 color: AppColors.error,
-                suffixIcon: const Icon(Icons.close_rounded, color: AppColors.white),
+                suffixIcon: const Icon(
+                  Icons.close_rounded,
+                  color: AppColors.white,
+                ),
                 titleDate: DateTime(2025, 6, 2),
                 leaveDate: DateTime(2025, 5, 22),
                 leaveType: 'Full Day',
                 reason: 'Attending personal work',
-                location: '101, Sanand - Sarkhej Rd, Makarba, Ahmedabad, Gujarat 382210, India',
+                location:
+                    '101, Sanand - Sarkhej Rd, Makarba, Ahmedabad, Gujarat 382210, India',
                 createdOn: DateTime(2025, 1, 20, 10),
                 approvedOn: DateTime(2025, 1, 20, 11),
                 approvedBy: 'Mukund Madhav',
@@ -303,4 +422,3 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
-

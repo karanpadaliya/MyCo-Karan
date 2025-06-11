@@ -1,7 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:intl/intl.dart';
-import '../custom_widgets/new_myco_button.dart';
-import '../custom_widgets/new_myco_button_theme.dart';
+
+import '../karan_file/new_myco_button.dart';
+import '../karan_file/new_myco_button_theme.dart';
 import '../themes_colors/colors.dart';
 
 class DialDatePickerWidget extends StatefulWidget {
@@ -170,7 +171,7 @@ class _DialDatePickerWidgetState extends State<DialDatePickerWidget> {
     image: widget.image,
     width: widget.width,
     height: widget.height,
-    colorBackground: AppColors.white,
+    backgroundColor: AppColors.white,
     border: Border.all(color: AppColors.borderColor, width: 1.2),
   );
 }

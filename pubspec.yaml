@@ -40,6 +40,9 @@ dependencies:
   shared_preferences: ^2.1.0
   intl:
   file_picker:
+  marquee:
+  mobile_scanner:
+  table_calendar:
 
 dev_dependencies:
   flutter_test:
