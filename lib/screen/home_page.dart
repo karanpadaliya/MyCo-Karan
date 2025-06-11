@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:developer';
+import 'dart:ffi';
 
 import 'package:flutter/material.dart';
 import 'package:marquee/marquee.dart';
@@ -6,6 +8,7 @@ import '../jenil_file/bottomsheet_otp.dart';
 import '../jenil_file/bottomsheet_radio_btn.dart';
 import '../jenil_file/bottomsheet_travel_mode.dart';
 import '../jenil_file/myco_custom_tabbar.dart';
+import '../karan_file/SegmentedProgressBar.dart';
 import '../karan_file/new_myco_button.dart';
 import '../main.dart';
 import '../maulik_file/current_opening_card.dart';
@@ -15,6 +18,7 @@ import '../maulik_file/see_less_more_widget.dart';
 import '../maulik_file/wfh_box.dart';
 import '../maulik_file/work_report_add_box.dart';
 import '../maulik_file/work_report_history_box.dart';
+import '../rishi_file/segmented_circular_timer.dart';
 import '../themes_colors/colors.dart';
 import '../tirth_file/custom_calendar.dart';
 
@@ -36,6 +40,23 @@ class _HomePageState extends State<HomePage> {
         child: SingleChildScrollView(
           child: Column(
             children: [
+              const SizedBox(height: 40),
+              SegmentedProgressBar(
+                maxMinutes: 60,
+                minutesPerSegment: 10,
+                strokeWidth: 20,
+                sectionGap: 2,
+                backgroundColor: Colors.grey.shade300,
+                primaryColor: Colors.teal,
+                colorRanges: [
+                  ColorRange(9, 12, Colors.red),
+                  ColorRange(18, 25, Colors.orange),
+                ],
+              ),
+
+
+              // SegmentedCircularTimer(),
+              const SizedBox(height: 20),
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: MyCustomTabBar(

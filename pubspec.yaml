@@ -43,6 +43,7 @@ dependencies:
   marquee:
   mobile_scanner:
   table_calendar:
+  fl_chart:
 
 dev_dependencies:
   flutter_test:
