@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+
 import '../themes_colors/colors.dart';
 
 class WorkReportHistory extends StatelessWidget {
@@ -32,9 +33,19 @@ class WorkReportHistory extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 5),
       decoration: BoxDecoration(
-        color: boxColor ?? AppColors.primary,
+        // color: boxColor ?? AppColors.primary,
         border: Border.all(color: borderColor ?? AppColors.borderColor),
         borderRadius: BorderRadius.circular(borderRadius ?? 8),
+        boxShadow: [
+          BoxShadow(
+            color: boxColor?.withAlpha(200) ?? AppColors.primary.withAlpha(200),
+          ),
+          BoxShadow(
+            color: boxColor ?? AppColors.primary,
+            spreadRadius: -6.0,
+            blurRadius: 8.0,
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -44,7 +55,7 @@ class WorkReportHistory extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
             child: Row(
               children: [
-                const Icon(Icons.calendar_month, color: Colors.white, size: 20),
+                const Icon(Icons.calendar_month, color: Colors.white),
                 const SizedBox(width: 6),
                 Padding(
                   padding: const EdgeInsets.only(top: 3.0),

@@ -2,7 +2,7 @@ import 'dart:developer';
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:myco_karan/custom_widgets/responsive.dart';
+import 'package:myco_karan/jenil_file/responsive.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../themes_colors/colors.dart';

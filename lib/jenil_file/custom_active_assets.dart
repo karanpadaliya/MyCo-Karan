@@ -1,35 +1,36 @@
 import 'package:flutter/material.dart';
-import 'package:myco_karan/custom_widgets/responsive.dart';
+import 'package:myco_karan/jenil_file/responsive.dart';
 import '../themes_colors/colors.dart';
+import 'doted_line.dart';
 
-class CustomAssetsHistory extends StatelessWidget {
-  final String userName;
-  final String designation;
-  final String location;
-  final String takeoverDate;
-  final String handoverDate;
+class CustomActiveAssets extends StatelessWidget {
+  final String title;
+  final String code;
+  final String imageUrl;
+  final String brand;
+  final String serial;
+  final String handover;
   final List<Color> gradientContainerColor;
-  final VoidCallback? onViewMore;
 
-  const CustomAssetsHistory({
+  const CustomActiveAssets({
     super.key,
-    required this.userName,
-    required this.designation,
-    required this.location,
-    required this.takeoverDate,
-    required this.handoverDate,
-    this.onViewMore,
+    required this.title,
+    required this.code,
+    required this.imageUrl,
+    required this.brand,
+    required this.serial,
+    required this.handover,
     required this.gradientContainerColor,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      margin: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(color: AppColors.borderColor, width: 1.2),
         borderRadius: BorderRadius.circular(13),
+        border: Border.all(color: AppColors.borderColor, width: 1.5),
+        color: Colors.white,
         boxShadow: [
           BoxShadow(
             color: Colors.grey.shade200,
@@ -38,14 +39,13 @@ class CustomAssetsHistory extends StatelessWidget {
           ),
         ],
       ),
-
       child: Column(
         children: [
           Stack(
             children: [
               Container(
                 width: double.infinity,
-                height: getHeight(context) * .06,
+                // height: getHeight(context) * .08,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
                   boxShadow: [
@@ -56,24 +56,36 @@ class CustomAssetsHistory extends StatelessWidget {
                       spreadRadius: 1,
                     ),
                   ],
-
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: gradientContainerColor,
                   ),
                 ),
-                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      userName,
+                      title,
                       style: TextStyle(
                         fontWeight: FontWeight.w400,
                         fontSize:
                             Theme.of(context).textTheme.bodyLarge?.fontSize ??
-                            18,
+                            14,
+                        fontFamily: 'Gilroy-SemiBold',
+                      ),
+                    ),
+                    Text(
+                      "($code)",
+                      style: TextStyle(
+                        fontWeight: FontWeight.w400,
+                        fontSize:
+                            Theme.of(context).textTheme.bodyMedium?.fontSize ??
+                            14,
                         fontFamily: 'Gilroy-SemiBold',
                       ),
                     ),
@@ -81,6 +93,7 @@ class CustomAssetsHistory extends StatelessWidget {
                 ),
               ),
 
+              // Inner top shadow (white gradient)
               Positioned(
                 top: 0,
                 left: 0,
@@ -105,38 +118,57 @@ class CustomAssetsHistory extends StatelessWidget {
             ],
           ),
 
-          ListTile(
-            leading: const CircleAvatar(
-              backgroundImage: AssetImage("assets/girl.jpg"),
-              radius: 35,
+          SizedBox(height: getHeight(context) * .01),
+          Container(
+            padding: EdgeInsets.all(getResponsive(context) * 12),
+            decoration: BoxDecoration(
+              // border: Border(
+              //   left: BorderSide(color: AppColors.primary),
+              //   right: BorderSide(color: AppColors.primary),
+              //   bottom: BorderSide(color: AppColors.primary),
+              // ),
             ),
-            title: Text(
-              userName,
-              style: TextStyle(
-                fontWeight: FontWeight.w400,
-                fontSize: Theme.of(context).textTheme.bodyLarge?.fontSize ?? 14,
-                fontFamily: 'Gilroy-SemiBold',
-              ),
-            ),
-            subtitle: Text('$designation\n$location'),
-          ),
-
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _info("Takeover Date", takeoverDate, context),
-                _info("Handover Date", handoverDate, context),
+                Image.asset(
+                  imageUrl,
+                  height: getHeight(context) * .18,
+                  width: getHeight(context) * .15,
+                  fit: BoxFit.contain,
+                ),
+
+                const SizedBox(width: 12),
+
+                CustomPaint(
+                  size: Size(4, 0),
+                  painter: DotedLine(
+                    dotCount: 16,
+                    dotWidth: 2,
+                    dotHeight: 6,
+                    spacing: 4,
+                    color: AppColors.primary,
+                    vertical: true,
+                  ),
+                ),
+                const SizedBox(width: 12),
+
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    spacing: 3,
+                    children: [
+                      _info("Brand", brand, context),
+                      const SizedBox(height: 8),
+                      _info("Sr . No./MAC/Sim", serial, context),
+                      const SizedBox(height: 8),
+                      _info("Handover", handover, context),
+                    ],
+                  ),
+                ),
               ],
             ),
-          ),
-
-          const SizedBox(height: 10),
-
-          Padding(
-            padding: const EdgeInsets.only(left: 16, bottom: 12),
-            child: _buildFourGrid(onTap: onViewMore, context: context),
           ),
         ],
       ),
@@ -163,44 +195,6 @@ class CustomAssetsHistory extends StatelessWidget {
             fontWeight: FontWeight.w400,
             fontSize: Theme.of(context).textTheme.bodyMedium?.fontSize ?? 14,
             fontFamily: 'Gilroy-SemiBold',
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildFourGrid({VoidCallback? onTap, required BuildContext context}) {
-    return Row(
-      children: [
-        for (int i = 0; i < 2; i++)
-          Container(
-            width: getWidth(context) * .15,
-            height: getWidth(context) * .15,
-
-            margin: const EdgeInsets.only(right: 8),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade300,
-              borderRadius: BorderRadius.circular(6),
-            ),
-          ),
-        GestureDetector(
-          onTap: onTap,
-          child: Container(
-            width: getWidth(context) * .15,
-            height: getWidth(context) * .15,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: Colors.grey.shade300,
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: const Text(
-              '+4',
-              style: TextStyle(
-                fontWeight: FontWeight.w400,
-                fontSize: 14,
-                fontFamily: 'Gilroy-SemiBold',
-              ),
-            ),
           ),
         ),
       ],

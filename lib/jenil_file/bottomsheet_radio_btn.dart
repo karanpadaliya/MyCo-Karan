@@ -1,7 +1,7 @@
 //
 // import 'package:flutter/material.dart';
-// import 'package:myco_component/custom_widgets/responsive.dart';
-// import 'package:myco_component/custom_widgets/text_field.dart';
+// import 'package:myco_component/jenil_file/responsive.dart';
+// import 'package:myco_component/jenil_file/text_field.dart';
 // import '../themes_colors/colors.dart';
 // import 'new_myco_button.dart';
 // import 'new_myco_button_theme.dart';
@@ -252,8 +252,8 @@
 // }
 
 import 'package:flutter/material.dart';
-import 'package:myco_karan/custom_widgets/responsive.dart';
-import 'package:myco_karan/custom_widgets/text_field.dart';
+import 'package:myco_karan/jenil_file/responsive.dart';
+import 'package:myco_karan/jenil_file/text_field.dart';
 import '../themes_colors/colors.dart';
 import '../karan_file/new_myco_button.dart';
 import '../karan_file/new_myco_button_theme.dart';

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:myco_karan/custom_widgets/responsive.dart';
+import 'package:myco_karan/jenil_file/responsive.dart';
 import 'new_myco_button_theme.dart';
 
 class MyCoButton extends StatelessWidget {

@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -39,9 +41,21 @@ class CurrentOpeningCard extends StatelessWidget {
       width: double.infinity,
       margin: const EdgeInsets.symmetric(horizontal: 5),
       decoration: BoxDecoration(
-        color: boxColor ?? AppColors.secondPrimary,
+        // color: boxColor ?? AppColors.secondPrimary,
         borderRadius: BorderRadius.circular(borderRadius ?? 8),
         border: Border.all(color: borderColor ?? AppColors.borderColor),
+        boxShadow: [
+          BoxShadow(
+            color:
+                boxColor?.withAlpha(200) ??
+                AppColors.secondPrimary.withAlpha(200),
+          ),
+          BoxShadow(
+            color: boxColor ?? AppColors.secondPrimary,
+            spreadRadius: -6.0,
+            blurRadius: 8.0,
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -114,21 +128,12 @@ class CurrentOpeningCard extends StatelessWidget {
                   child: Column(
                     children: [
                       rowData(
-                        icon: const Icon(
-                          Icons.phone_in_talk_rounded,
-                          color: AppColors.primary,
-                        ),
+                        image: 'assets/call-calling.png',
                         text: '$number',
                         statusData: status,
                       ),
                       const SizedBox(height: 6),
-                      rowData(
-                        icon: const Icon(
-                          Icons.chat_outlined,
-                          color: AppColors.primary,
-                        ),
-                        text: mail,
-                      ),
+                      rowData(image: 'assets/message.png', text: mail),
                     ],
                   ),
                 ),
@@ -176,25 +181,32 @@ class CurrentOpeningCard extends StatelessWidget {
   }
 
   Widget rowData({
-    required Icon icon,
+    required String image,
     required String text,
     String? statusData,
   }) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(padding: const EdgeInsets.only(top: 2.0), child: icon),
-        const SizedBox(width: 6),
+        Padding(
+          padding: const EdgeInsets.only(top: 2.0),
+          child: Image.asset(image, height: 22),
+        ),
+        const SizedBox(width: 8),
         Expanded(
           child: Text(
             text,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+            style: const TextStyle(
+              fontSize: 16,
+              fontFamily: 'Gilroy-SemiBold',
+              fontWeight: FontWeight.normal,
+            ),
           ),
         ),
         if (statusData != null) const SizedBox(width: 10),
         if (statusData != null)
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(20),
               border: Border.all(color: AppColors.GPSMediumColor),
@@ -202,9 +214,10 @@ class CurrentOpeningCard extends StatelessWidget {
             child: Center(
               child: Text(
                 statusData,
-                style: TextStyle(
+                style: const TextStyle(
                   color: AppColors.GPSMediumColor,
                   fontSize: 12,
+                  fontFamily: 'Gilroy-SemiBold',
                   fontWeight: FontWeight.w600,
                 ),
               ),

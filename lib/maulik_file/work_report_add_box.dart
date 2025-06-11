@@ -1,8 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+
 import '../karan_file/new_myco_button.dart';
 import '../themes_colors/colors.dart';
-
 class WorkReportAdd extends StatelessWidget {
   final String title;
   final VoidCallback onNextTap;
@@ -31,9 +31,21 @@ class WorkReportAdd extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 5),
       decoration: BoxDecoration(
-        color: boxColor ?? AppColors.secondPrimary,
+        // color: boxColor ?? AppColors.secondPrimary,
         border: Border.all(color: borderColor ?? AppColors.borderColor),
         borderRadius: BorderRadius.circular(borderRadius ?? 8),
+        boxShadow: [
+          BoxShadow(
+            color:
+                boxColor?.withAlpha(200) ??
+                AppColors.secondPrimary.withAlpha(200),
+          ),
+          BoxShadow(
+            color: boxColor ?? AppColors.secondPrimary,
+            spreadRadius: -6.0,
+            blurRadius: 8.0,
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

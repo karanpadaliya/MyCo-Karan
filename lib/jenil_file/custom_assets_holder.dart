@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:myco_karan/custom_widgets/responsive.dart';
+import 'package:myco_karan/jenil_file/responsive.dart';
 import '../themes_colors/colors.dart';
 import 'doted_line.dart';
 

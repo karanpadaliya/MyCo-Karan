@@ -2,9 +2,10 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:marquee/marquee.dart';
-import '../custom_widgets/bottomsheet_otp.dart';
-import '../custom_widgets/bottomsheet_radio_btn.dart';
-import '../custom_widgets/bottomsheet_travel_mode.dart';
+import '../jenil_file/bottomsheet_otp.dart';
+import '../jenil_file/bottomsheet_radio_btn.dart';
+import '../jenil_file/bottomsheet_travel_mode.dart';
+import '../jenil_file/myco_custom_tabbar.dart';
 import '../karan_file/new_myco_button.dart';
 import '../main.dart';
 import '../maulik_file/current_opening_card.dart';
@@ -35,7 +36,33 @@ class _HomePageState extends State<HomePage> {
         child: SingleChildScrollView(
           child: Column(
             children: [
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: MyCustomTabBar(
+                  isShadowTopLeft: true,
+                  tabs: [
+                    'Active Assets (5)',
+                    'Active Assets (5)',
+                    // 'Active Assets (5)',
+                  ],
+                  selectedBgColor: Colors.teal,
+                  unselectedBorderAndTextColor: AppColors.secondPrimary,
+                  tabBarBorderColor: AppColors.primary,
+                ),
+              ),
               const SizedBox(height: 50),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: MyCustomTabBar(
+                  isShadowBottomLeft: true,
+                  tabs: ['All Assets', 'Active Assets', 'Past Assets'],
+                  selectedBgColor: Colors.teal,
+                  unselectedBorderAndTextColor: AppColors.secondPrimary,
+                  tabBarBorderColor: AppColors.primary,
+                ),
+              ),
+              const SizedBox(height: 50),
+
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: ImageGridPreviewWidget(
@@ -71,11 +98,32 @@ class _HomePageState extends State<HomePage> {
                 },
               ),
               const SizedBox(height: 50),
+              MyCoButton(
+                title: "Travel mode Bottom Sheet",
+                boarderRadius: 50,
+                isShadowTopLeft: true,
+                isShadowTopRight: true,
+                // isShadowBottomLeft: true,
+                // isShadowBottomRight: true,
+                textStyle: TextStyle(color: AppColors.primary),
+                backgroundColor: AppColors.white,
+                borderColor: Colors.blue,
+                onTap: () {
+                  showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    backgroundColor: Colors.transparent,
+                    builder: (_) => OutOfRangeBottomSheet(imageMargin: 0),
+                  );
+                },
+              ),
+              const SizedBox(height: 50),
 
               MyCoButton(
                 title: "Travel mode Alert dialog",
                 boarderRadius: 50,
                 isShadowBottomLeft: true,
+                backgroundColor: Colors.cyan.shade200,
                 onTap: () {
                   showDialog(
                     context: context,
@@ -98,6 +146,7 @@ class _HomePageState extends State<HomePage> {
                 title: "BottomSheet RadioButton Alert",
                 boarderRadius: 50,
                 isShadowBottomRight: true,
+                backgroundColor: Colors.cyan.shade200,
                 onTap: () {
                   showDialog(
                     context: context,
@@ -134,6 +183,7 @@ class _HomePageState extends State<HomePage> {
                 title: "BottomSheet RadioButton",
                 boarderRadius: 50,
                 isShadowTopLeft: true,
+                backgroundColor: Colors.cyan.shade200,
                 onTap: () {
                   showModalBottomSheet(
                     context: context,
@@ -190,7 +240,7 @@ class _HomePageState extends State<HomePage> {
                 title: "Otp BottomSheet",
                 boarderRadius: 50,
                 isShadowTopRight: true,
-
+                backgroundColor: Colors.cyan.shade200,
                 onTap: () {
                   showCustomEmailVerificationSheet(
                     context: context,
@@ -221,55 +271,6 @@ class _HomePageState extends State<HomePage> {
               ),
               const SizedBox(height: 50),
 
-              // MyCoButton(
-              //   title: "Calender Range Selection",
-              //   boarderRadius: 50,
-              //   onTap: () {
-              //     showDialog(
-              //       context: context,
-              //       builder: (context) {
-              //         return AlertDialog(
-              //           contentPadding: EdgeInsets.zero,
-              //           shape: RoundedRectangleBorder(
-              //             borderRadius: BorderRadius.circular(12),
-              //           ),
-              //           backgroundColor: AppColors.white,
-              //           content: CustomCalendar(
-              //             totalPreviousYear: 0,
-              //             totalNextYear: 0,
-              //             isMultipleSelection: false,
-              //             isRangeSelectionMode: true,
-              //           ),
-              //         );
-              //       },
-              //     );
-              //   },
-              // ),
-              // const SizedBox(height: 50),
-              // MyCoButton(
-              //   title: "Calender Multi Selection",
-              //   boarderRadius: 50,
-              //   onTap: () {
-              //     showDialog(
-              //       context: context,
-              //       builder: (context) {
-              //         return AlertDialog(
-              //           contentPadding: EdgeInsets.zero,
-              //           shape: RoundedRectangleBorder(
-              //             borderRadius: BorderRadius.circular(12),
-              //           ),
-              //           backgroundColor: AppColors.white,
-              //           content: CustomCalendar(
-              //             totalPreviousYear: 0,
-              //             totalNextYear: 0,
-              //             isMultipleSelection: true,
-              //             isRangeSelectionMode: false,
-              //           ),
-              //         );
-              //       },
-              //     );
-              //   },
-              // ),
               MyCoButton(
                 title: "Calender",
                 boarderRadius: 50,
