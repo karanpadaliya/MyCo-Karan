@@ -44,7 +44,7 @@ class _HomePageState extends State<HomePage> {
             children: [
               const SizedBox(height: 40),
               SegmentedProgressBar(
-                maxMinutes: 11,
+                maxMinutes: 10,
                 minutesPerSegment: 2,
                 strokeWidth: 25,
                 sectionGap: 2,
@@ -107,9 +107,7 @@ class _HomePageState extends State<HomePage> {
                 boarderRadius: 50,
                 isShadowBottomLeft: true,
                 isShadowBottomRight: true,
-                textStyle: TextStyle(color: AppColors.primary),
-                backgroundColor: AppColors.white,
-                borderColor: Colors.blue,
+                textStyle: TextStyle(color: AppColors.white),
                 onTap: () {
                   showModalBottomSheet(
                     context: context,
