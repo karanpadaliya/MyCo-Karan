@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:myco_karan/themes_colors/colors.dart';
 
 class ColorRange {
   final double startMinutes;
@@ -16,7 +17,7 @@ class SegmentedProgressBar extends StatefulWidget {
   final double strokeWidth;
   final double sectionGap;
   final Color backgroundColor;
-  final Color primaryColor;
+  final List<Color> primaryColor;
   final List<ColorRange> colorRanges;
   final VoidCallback? onCompleted;
 
@@ -27,7 +28,7 @@ class SegmentedProgressBar extends StatefulWidget {
     this.strokeWidth = 20,
     this.sectionGap = 2,
     this.backgroundColor = Colors.grey,
-    this.primaryColor = Colors.teal,
+    this.primaryColor = const [Colors.teal],
     this.colorRanges = const [],
     this.onCompleted,
   }) : super(key: key);
@@ -49,8 +50,7 @@ class _SegmentedProgressBarState extends State<SegmentedProgressBar> {
   void _startTimer() {
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       setState(() {
-        currentMinutes += 1 / 60.0; // 1 second = 1/60 minute
-
+        currentMinutes += 1 / 60.0;
         if (currentMinutes >= widget.maxMinutes) {
           currentMinutes = widget.maxMinutes;
           _timer.cancel();
@@ -69,9 +69,13 @@ class _SegmentedProgressBarState extends State<SegmentedProgressBar> {
   @override
   Widget build(BuildContext context) {
     final totalSeconds = (currentMinutes * 60).toInt();
-    final displayMinutes = (totalSeconds ~/ 60).toString().padLeft(2, '0');
+    final displayHours = (totalSeconds ~/ 3600).toString().padLeft(2, '0');
+    final displayMinutes = ((totalSeconds % 3600) ~/ 60).toString().padLeft(
+      2,
+      '0',
+    );
     final displaySeconds = (totalSeconds % 60).toString().padLeft(2, '0');
-    final timeText = "$displayMinutes:$displaySeconds";
+    final timeText = "$displayHours:$displayMinutes:$displaySeconds";
 
     return SizedBox(
       width: 250,
@@ -79,27 +83,61 @@ class _SegmentedProgressBarState extends State<SegmentedProgressBar> {
       child: Stack(
         alignment: Alignment.center,
         children: [
-          CustomPaint(
-            size: const Size.square(250),
-            painter: _SegmentedProgressBarPainter(
-              maxMinutes: widget.maxMinutes,
-              currentMinutes: currentMinutes,
-              minutesPerSegment: widget.minutesPerSegment,
-              strokeWidth: widget.strokeWidth,
-              sectionGap: widget.sectionGap,
-              backgroundColor: widget.backgroundColor,
-              primaryColor: widget.primaryColor,
-              colorRanges: widget.colorRanges,
+          // Glowing ring shadow and progress segments
+          Container(
+            width: 200,
+            height: 200,
+            decoration: BoxDecoration(
+              // color: Colors.white,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: Color(0xFF2FBBA4),
+                  blurRadius: 25,
+                  // spreadRadius: 1,
+                ),
+              ],
+            ),
+            child: CustomPaint(
+              painter: _SegmentedProgressBarPainter(
+                maxMinutes: widget.maxMinutes,
+                currentMinutes: currentMinutes,
+                minutesPerSegment: widget.minutesPerSegment,
+                strokeWidth: widget.strokeWidth,
+                sectionGap: widget.sectionGap,
+                backgroundColor: widget.backgroundColor,
+                primaryColor: widget.primaryColor,
+                colorRanges: widget.colorRanges,
+              ),
             ),
           ),
-          Text(
-            timeText,
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
+
+          // Center white background for timer
+          Container(
+            width: 110,
+            height: 110,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(color: Color(0xFF2FBBA4)),
+                BoxShadow(
+                  color: AppColors.white,
+                  spreadRadius: 14,
+                  blurRadius: 15,
+                ),
+              ],
             ),
-          )
+            alignment: Alignment.center,
+            child: Text(
+              timeText,
+              style: const TextStyle(
+                fontFamily: "Gilroy-Medium",
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -113,7 +151,7 @@ class _SegmentedProgressBarPainter extends CustomPainter {
   final double strokeWidth;
   final double sectionGap;
   final Color backgroundColor;
-  final Color primaryColor;
+  final List<Color> primaryColor;
   final List<ColorRange> colorRanges;
 
   _SegmentedProgressBarPainter({
@@ -138,24 +176,28 @@ class _SegmentedProgressBarPainter extends CustomPainter {
     final totalAvailableAngle = 360.0 - totalGapAngle;
     final anglePerMinute = totalAvailableAngle / maxMinutes;
 
-    final backgroundPaint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = strokeWidth
-      ..color = backgroundColor;
+    final backgroundPaint =
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = strokeWidth
+          ..color = backgroundColor;
 
-    final colorPaint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = strokeWidth;
+    final colorPaint =
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = strokeWidth;
 
     double globalStartAngle = -90;
 
     for (int i = 0; i < totalSegments; i++) {
       final segmentStartMinutes = i * minutesPerSegment;
-      final segmentDuration =
-      min(minutesPerSegment, maxMinutes - segmentStartMinutes);
+      final segmentDuration = min(
+        minutesPerSegment,
+        maxMinutes - segmentStartMinutes,
+      );
       final segmentAngle = segmentDuration * anglePerMinute;
 
-      // Draw segment background
+      // Background segment
       canvas.drawArc(
         rect,
         _degToRad(globalStartAngle),
@@ -164,18 +206,31 @@ class _SegmentedProgressBarPainter extends CustomPainter {
         backgroundPaint,
       );
 
-      // Draw progress in this segment
+      // Foreground segment progress
       double localStartAngle = globalStartAngle;
       double m = segmentStartMinutes;
 
       while (m < segmentStartMinutes + segmentDuration) {
         if (m >= currentMinutes) break;
 
-        final color = _findColorForMinute(m) ?? primaryColor;
-        colorPaint.color = color;
+        final progress = min(1.0, currentMinutes - m);
+        final sweepAngle = anglePerMinute * progress;
 
-        double progress = min(1.0, currentMinutes - m);
-        double sweepAngle = anglePerMinute * progress;
+        final customColor = _findColorForMinute(m);
+        if (customColor != null) {
+          colorPaint.shader = null;
+          colorPaint.color = customColor;
+        } else if (primaryColor.length > 1) {
+          colorPaint.shader = SweepGradient(
+            colors: primaryColor,
+            startAngle: 0.0,
+            endAngle: 2 * pi,
+            transform: GradientRotation(-pi / 2),
+          ).createShader(rect);
+        } else {
+          colorPaint.shader = null;
+          colorPaint.color = primaryColor.first;
+        }
 
         canvas.drawArc(
           rect,

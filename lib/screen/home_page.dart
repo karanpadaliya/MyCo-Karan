@@ -18,7 +18,6 @@ import '../maulik_file/see_less_more_widget.dart';
 import '../maulik_file/wfh_box.dart';
 import '../maulik_file/work_report_add_box.dart';
 import '../maulik_file/work_report_history_box.dart';
-import '../rishi_file/segmented_circular_timer.dart';
 import '../themes_colors/colors.dart';
 import '../tirth_file/custom_calendar.dart';
 
@@ -32,6 +31,9 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   String scannedResult = 'ScannerData';
 
+  // // for SegmentProgressBar
+  // final GlobalKey<SegmentedProgressBarState> progressKey = GlobalKey();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -42,20 +44,17 @@ class _HomePageState extends State<HomePage> {
             children: [
               const SizedBox(height: 40),
               SegmentedProgressBar(
-                maxMinutes: 10,
+                maxMinutes: 11,
                 minutesPerSegment: 2,
-                strokeWidth: 15,
-                sectionGap: 4,
-                backgroundColor: Colors.grey.shade300,
+                strokeWidth: 25,
+                sectionGap: 2,
+                primaryColor: [Color(0xFF2F648E), Color(0xFF2FBBA4)],
+                backgroundColor: AppColors.white,
                 colorRanges: [
-                  // ColorRange(0, 2, Colors.green),
-                  ColorRange(1, 4, Colors.yellow),
-                  ColorRange(4, 6, Colors.orange),
-                  ColorRange(6, 10, Colors.red),
+                  ColorRange(1, 3, Color(0xffFDB913)),
+                  ColorRange(5, 7, Color(0xff2F648E)),
                 ],
               ),
-
-
 
               // SegmentedCircularTimer(),
               const SizedBox(height: 20),
