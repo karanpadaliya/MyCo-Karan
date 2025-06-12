@@ -70,10 +70,7 @@ class _SegmentedProgressBarState extends State<SegmentedProgressBar> {
   Widget build(BuildContext context) {
     final totalSeconds = (currentMinutes * 60).toInt();
     final displayHours = (totalSeconds ~/ 3600).toString().padLeft(2, '0');
-    final displayMinutes = ((totalSeconds % 3600) ~/ 60).toString().padLeft(
-      2,
-      '0',
-    );
+    final displayMinutes = ((totalSeconds % 3600) ~/ 60).toString().padLeft(2, '0');
     final displaySeconds = (totalSeconds % 60).toString().padLeft(2, '0');
     final timeText = "$displayHours:$displayMinutes:$displaySeconds";
 
@@ -83,18 +80,15 @@ class _SegmentedProgressBarState extends State<SegmentedProgressBar> {
       child: Stack(
         alignment: Alignment.center,
         children: [
-          // Glowing ring shadow and progress segments
           Container(
             width: 200,
             height: 200,
-            decoration: BoxDecoration(
-              // color: Colors.white,
+            decoration: const BoxDecoration(
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
                   color: Color(0xFF2FBBA4),
                   blurRadius: 25,
-                  // spreadRadius: 1,
                 ),
               ],
             ),
@@ -109,17 +103,20 @@ class _SegmentedProgressBarState extends State<SegmentedProgressBar> {
                 primaryColor: widget.primaryColor,
                 colorRanges: widget.colorRanges,
               ),
+              foregroundPainter: InnerShadowPainter(
+                strokeWidth: 5,
+                // blurRadius: 10,
+                shadowColor: Colors.black26,
+              ),
             ),
           ),
-
-          // Center white background for timer
           Container(
             width: 110,
             height: 110,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               boxShadow: [
-                BoxShadow(color: Color(0xFF2FBBA4)),
+                const BoxShadow(color: Color(0xFF2FBBA4)),
                 BoxShadow(
                   color: AppColors.white,
                   spreadRadius: 14,
@@ -176,28 +173,22 @@ class _SegmentedProgressBarPainter extends CustomPainter {
     final totalAvailableAngle = 360.0 - totalGapAngle;
     final anglePerMinute = totalAvailableAngle / maxMinutes;
 
-    final backgroundPaint =
-        Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = strokeWidth
-          ..color = backgroundColor;
+    final backgroundPaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth
+      ..color = backgroundColor;
 
-    final colorPaint =
-        Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = strokeWidth;
+    final colorPaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth;
 
     double globalStartAngle = -90;
 
     for (int i = 0; i < totalSegments; i++) {
       final segmentStartMinutes = i * minutesPerSegment;
-      final segmentDuration = min(
-        minutesPerSegment,
-        maxMinutes - segmentStartMinutes,
-      );
+      final segmentDuration = min(minutesPerSegment, maxMinutes - segmentStartMinutes);
       final segmentAngle = segmentDuration * anglePerMinute;
 
-      // Background segment
       canvas.drawArc(
         rect,
         _degToRad(globalStartAngle),
@@ -206,7 +197,6 @@ class _SegmentedProgressBarPainter extends CustomPainter {
         backgroundPaint,
       );
 
-      // Foreground segment progress
       double localStartAngle = globalStartAngle;
       double m = segmentStartMinutes;
 
@@ -261,4 +251,41 @@ class _SegmentedProgressBarPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+}
+
+class InnerShadowPainter extends CustomPainter {
+  final double strokeWidth;
+  final double blurRadius;
+  final Color shadowColor;
+
+  InnerShadowPainter({
+    required this.strokeWidth,
+    this.blurRadius = 10.0,
+    this.shadowColor = Colors.black12,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final outerRadius = (min(size.width, size.height) / 2);
+    final innerRadius = outerRadius - strokeWidth;
+    final center = size.center(Offset.zero);
+
+    final outerPath = Path()..addOval(Rect.fromCircle(center: center, radius: outerRadius));
+    final innerPath = Path()..addOval(Rect.fromCircle(center: center, radius: innerRadius));
+    final ringPath = Path.combine(PathOperation.difference, outerPath, innerPath);
+
+    canvas.saveLayer(Offset.zero & size, Paint());
+
+    canvas.drawPath(
+      ringPath,
+      Paint()
+        ..color = shadowColor
+        ..maskFilter = MaskFilter.blur(BlurStyle.inner, blurRadius),
+    );
+
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

@@ -1,6 +1,4 @@
-import 'dart:async';
 import 'dart:developer';
-import 'dart:ffi';
 
 import 'package:flutter/material.dart';
 import 'package:marquee/marquee.dart';
@@ -31,9 +29,6 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   String scannedResult = 'ScannerData';
 
-  // // for SegmentProgressBar
-  // final GlobalKey<SegmentedProgressBarState> progressKey = GlobalKey();
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -44,7 +39,7 @@ class _HomePageState extends State<HomePage> {
             children: [
               const SizedBox(height: 40),
               SegmentedProgressBar(
-                maxMinutes: 10,
+                maxMinutes: 11,
                 minutesPerSegment: 2,
                 strokeWidth: 25,
                 sectionGap: 2,
