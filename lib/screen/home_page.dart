@@ -1,7 +1,10 @@
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:marquee/marquee.dart';
+import 'package:myco_karan/karan_file/custom_media_picker/custom_media_picker_container.dart';
+import '../jenil_file/app_theme.dart';
 import '../jenil_file/bottomsheet_otp.dart';
 import '../jenil_file/bottomsheet_radio_btn.dart';
 import '../jenil_file/bottomsheet_travel_mode.dart';
@@ -28,6 +31,8 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   String scannedResult = 'ScannerData';
+  File? _pickedImage;
+  File? pickedFile;
 
   @override
   Widget build(BuildContext context) {
@@ -50,8 +55,20 @@ class _HomePageState extends State<HomePage> {
                   ColorRange(5, 7, Color(0xff2F648E)),
                 ],
               ),
-
-              // SegmentedCircularTimer(),
+              const SizedBox(height: 20),
+              // Karan
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: CustomMediaPickerContainer(
+                  title: "Assets Image",
+                  imageTitle: "Capture Image",
+                  multipleImage: 15,
+                  // containerHeight: ,
+                  imagePath: "assets/gallery-export.png",
+                  backgroundColor: Colors.blue.shade50,
+                  // imageHeight: 160,
+                ),
+              ),
               const SizedBox(height: 20),
               Padding(
                 padding: const EdgeInsets.all(8.0),

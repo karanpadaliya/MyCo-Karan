@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -143,6 +142,7 @@ class _ImageFilePickerWidgetState extends State<_ImageFilePickerWidget> {
 
         if (extension == '.png' ||
             extension == '.jpg' ||
+            extension == '.heic' ||
             extension == '.jpeg') {
           final File imageFile = File(pickedFile.path);
           if (mounted) Navigator.pop(context, imageFile); // Return the image
@@ -150,7 +150,7 @@ class _ImageFilePickerWidgetState extends State<_ImageFilePickerWidget> {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text("Invalid file type. Use PNG, JPG, or JPEG."),
+                content: Text("Invalid file type. Use PNG, JPG, HEIC or JPEG."),
               ),
             );
           }
@@ -165,73 +165,6 @@ class _ImageFilePickerWidgetState extends State<_ImageFilePickerWidget> {
       }
     }
   }
-
-  //   import 'dart:io';
-  // import 'package:file_picker/file_picker.dart';
-  // import 'package:flutter/material.dart';
-  // import 'package:image_picker/image_picker.dart'; // still needed for camera
-  // import 'package:path/path.dart' as path;
-
-  // Future<void> _pickImage(
-  //   ImageSource source, {
-  //   bool multiSelect = false,
-  // }) async {
-  //   try {
-  //     if (source == ImageSource.camera || !multiSelect) {
-  //       // Use image_picker for single image or camera
-  //       final XFile? pickedFile = await ImagePicker().pickImage(
-  //         source: source,
-  //         maxWidth: 800,
-  //         maxHeight: 800,
-  //         imageQuality: 80,
-  //       );
-  //
-  //       if (pickedFile != null) {
-  //         final String extension =
-  //             path.extension(pickedFile.path).toLowerCase();
-  //         if (['.png', '.jpg', '.jpeg'].contains(extension)) {
-  //           final File imageFile = File(pickedFile.path);
-  //           if (context.mounted)
-  //             Navigator.pop(context, [imageFile]); // return as list
-  //         } else {
-  //           if (context.mounted) {
-  //             ScaffoldMessenger.of(context).showSnackBar(
-  //               const SnackBar(
-  //                 content: Text("Invalid file type. Use PNG, JPG, or JPEG."),
-  //               ),
-  //             );
-  //           }
-  //         }
-  //       } else {
-  //         Navigator.pop(context); // User cancelled
-  //       }
-  //     } else {
-  //       // Use file_picker for multi-image selection from gallery
-  //       final result = await FilePicker.platform.pickFiles(
-  //         type: FileType.custom,
-  //         allowedExtensions: ['png', 'jpg', 'jpeg'],
-  //         allowMultiple: true,
-  //       );
-  //
-  //       if (result != null && result.files.isNotEmpty) {
-  //         final List<File> images =
-  //             result.paths
-  //                 .where((path) => path != null)
-  //                 .map((path) => File(path!))
-  //                 .toList();
-  //         log(".............................................$images");
-  //         // if (context.mounted) Navigator.pop(context, images);
-  //       } else {
-  //         Navigator.pop(context); // User cancelled
-  //       }
-  //     }
-  //   } catch (e) {
-  //     print("Error picking image(s): $e");
-  //     if (context.mounted) {
-  //       Navigator.pop(context); // Close in case of error
-  //     }
-  //   }
-  // }
 
   Future<void> _pickDocument() async {
     try {

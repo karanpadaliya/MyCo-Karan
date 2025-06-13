@@ -127,12 +127,14 @@ class _MyCoButtonMobile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color bgColor = enabled
-        ? (backgroundColor ?? MyCoButtonTheme.mobileBackgroundColor)
-        : Colors.grey.shade400;
+    final Color bgColor =
+        enabled
+            ? (backgroundColor ?? MyCoButtonTheme.mobileBackgroundColor)
+            : Colors.grey.shade400;
 
-    final TextStyle finalStyle =
-    (textStyle ?? MyCoButtonTheme.getMobileTextStyle(context)).copyWith(fontFamily: fontFamily);
+    final TextStyle finalStyle = (textStyle ??
+            MyCoButtonTheme.getMobileTextStyle(context))
+        .copyWith(fontFamily: fontFamily);
 
     final double radius = boarderRadius ?? MyCoButtonTheme.borderRadius;
 
@@ -143,14 +145,20 @@ class _MyCoButtonMobile extends StatelessWidget {
           Container(
             height: height ?? 0.04 * getHeight(context),
             width: width ?? 0.94 * getWidth(context),
-            decoration: decoration ??
+            decoration:
+                decoration ??
                 BoxDecoration(
                   color: bgColor,
                   borderRadius: BorderRadius.circular(radius),
-                  border: border ??
+                  border:
+                      border ??
                       Border.all(
-                        color: borderColor ?? MyCoButtonTheme.defaultBorder.top.color,
-                        width: borderWidth ?? MyCoButtonTheme.defaultBorder.top.width,
+                        color:
+                            borderColor ??
+                            MyCoButtonTheme.defaultBorder.top.color,
+                        width:
+                            borderWidth ??
+                            MyCoButtonTheme.defaultBorder.top.width,
                       ),
                 ),
             child: Center(
@@ -163,43 +171,45 @@ class _MyCoButtonMobile extends StatelessWidget {
               ),
             ),
           ),
-          if (isShadowTopLeft || isShadowTopRight || isShadowBottomRight || isShadowBottomLeft)
-            ...[
-              Positioned.fill(
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(radius),
-                  child: CustomPaint(
-                    painter: InnerShadowPainter(
-                      shadowColor: const Color(0x1A2FBBA4),
-                      blur: 1.4,
-                      offset: const Offset(0, 1),
-                      borderRadius: radius,
-                      isShadowTopLeft: isShadowTopLeft,
-                      isShadowTopRight: isShadowTopRight,
-                      isShadowBottomRight: isShadowBottomRight,
-                      isShadowBottomLeft: isShadowBottomLeft,
-                    ),
+          if (isShadowTopLeft ||
+              isShadowTopRight ||
+              isShadowBottomRight ||
+              isShadowBottomLeft) ...[
+            Positioned.fill(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(radius),
+                child: CustomPaint(
+                  painter: InnerShadowPainter(
+                    shadowColor: const Color(0x1A2FBBA4),
+                    blur: 1.4,
+                    offset: const Offset(0, 1),
+                    borderRadius: radius,
+                    isShadowTopLeft: isShadowTopLeft,
+                    isShadowTopRight: isShadowTopRight,
+                    isShadowBottomRight: isShadowBottomRight,
+                    isShadowBottomLeft: isShadowBottomLeft,
                   ),
                 ),
               ),
-              Positioned.fill(
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(radius),
-                  child: CustomPaint(
-                    painter: InnerShadowPainter(
-                      shadowColor: Colors.black38,
-                      blur: 4,
-                      offset: const Offset(4, -3),
-                      borderRadius: radius,
-                      isShadowTopLeft: isShadowTopLeft,
-                      isShadowTopRight: isShadowTopRight,
-                      isShadowBottomRight: isShadowBottomRight,
-                      isShadowBottomLeft: isShadowBottomLeft,
-                    ),
+            ),
+            Positioned.fill(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(radius),
+                child: CustomPaint(
+                  painter: InnerShadowPainter(
+                    shadowColor: Colors.black38,
+                    blur: 4,
+                    offset: const Offset(4, -3),
+                    borderRadius: radius,
+                    isShadowTopLeft: isShadowTopLeft,
+                    isShadowTopRight: isShadowTopRight,
+                    isShadowBottomRight: isShadowBottomRight,
+                    isShadowBottomLeft: isShadowBottomLeft,
                   ),
                 ),
               ),
-            ],
+            ),
+          ],
         ],
       ),
     );
@@ -233,14 +243,31 @@ class _ButtonContent extends StatelessWidget {
     } else if (imagePosition == AxisDirection.right) {
       children = [Text(title, style: style), SizedBox(width: gap), imageWidget];
     } else if (imagePosition == AxisDirection.up) {
-      children = [imageWidget, SizedBox(height: gap), Text(title, style: style)];
+      children = [
+        imageWidget,
+        SizedBox(height: gap),
+        Text(title, style: style),
+      ];
     } else {
-      children = [Text(title, style: style), SizedBox(height: gap), imageWidget];
+      children = [
+        Text(title, style: style),
+        SizedBox(height: gap),
+        imageWidget,
+      ];
     }
 
-    return (imagePosition == AxisDirection.left || imagePosition == AxisDirection.right)
-        ? Row(mainAxisSize: MainAxisSize.min, mainAxisAlignment: MainAxisAlignment.center, children: children)
-        : Column(mainAxisSize: MainAxisSize.min, mainAxisAlignment: MainAxisAlignment.center, children: children);
+    return (imagePosition == AxisDirection.left ||
+            imagePosition == AxisDirection.right)
+        ? Row(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: children,
+        )
+        : Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: children,
+        );
   }
 }
 
@@ -267,42 +294,66 @@ class InnerShadowPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final Paint paint = Paint()
-      ..color = shadowColor
-      ..maskFilter = MaskFilter.blur(BlurStyle.normal, blur);
+    final Paint paint =
+        Paint()
+          ..color = shadowColor
+          ..maskFilter = MaskFilter.blur(BlurStyle.normal, blur);
 
     final Rect rect = Offset.zero & size;
-    final RRect rrect = RRect.fromRectAndRadius(rect, Radius.circular(borderRadius));
-    final Path outer = Path()
-      ..addRect(Rect.fromLTRB(-size.width, -size.height, size.width * 2, size.height * 2));
-    final Path inner = Path()
-      ..addRRect(rrect)
-      ..fillType = PathFillType.evenOdd;
+    final RRect rrect = RRect.fromRectAndRadius(
+      rect,
+      Radius.circular(borderRadius),
+    );
+    final Path outer =
+        Path()..addRect(
+          Rect.fromLTRB(
+            -size.width,
+            -size.height,
+            size.width * 2,
+            size.height * 2,
+          ),
+        );
+    final Path inner =
+        Path()
+          ..addRRect(rrect)
+          ..fillType = PathFillType.evenOdd;
 
     canvas.saveLayer(rect, Paint());
 
     if (isShadowBottomRight) {
       canvas.save();
       canvas.translate(-offset.dx.abs(), -offset.dy.abs());
-      canvas.drawPath(Path.combine(PathOperation.difference, outer, inner), paint);
+      canvas.drawPath(
+        Path.combine(PathOperation.difference, outer, inner),
+        paint,
+      );
       canvas.restore();
     }
     if (isShadowBottomLeft) {
       canvas.save();
       canvas.translate(offset.dx.abs(), -offset.dy.abs());
-      canvas.drawPath(Path.combine(PathOperation.difference, outer, inner), paint);
+      canvas.drawPath(
+        Path.combine(PathOperation.difference, outer, inner),
+        paint,
+      );
       canvas.restore();
     }
     if (isShadowTopLeft) {
       canvas.save();
       canvas.translate(offset.dx.abs(), offset.dy.abs());
-      canvas.drawPath(Path.combine(PathOperation.difference, outer, inner), paint);
+      canvas.drawPath(
+        Path.combine(PathOperation.difference, outer, inner),
+        paint,
+      );
       canvas.restore();
     }
     if (isShadowTopRight) {
       canvas.save();
       canvas.translate(-offset.dx.abs(), offset.dy.abs());
-      canvas.drawPath(Path.combine(PathOperation.difference, outer, inner), paint);
+      canvas.drawPath(
+        Path.combine(PathOperation.difference, outer, inner),
+        paint,
+      );
       canvas.restore();
     }
 
