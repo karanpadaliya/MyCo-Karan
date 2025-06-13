@@ -9,8 +9,8 @@ import '../jenil_file/bottomsheet_otp.dart';
 import '../jenil_file/bottomsheet_radio_btn.dart';
 import '../jenil_file/bottomsheet_travel_mode.dart';
 import '../jenil_file/myco_custom_tabbar.dart';
-import '../karan_file/SegmentedProgressBar.dart';
-import '../karan_file/new_myco_button.dart';
+import '../karan_file/timer/SegmentedProgressBar.dart';
+import '../karan_file/custom_myco_button/custom_myco_button.dart';
 import '../main.dart';
 import '../maulik_file/current_opening_card.dart';
 import '../maulik_file/ios_calendar_time_picker.dart';
@@ -62,8 +62,7 @@ class _HomePageState extends State<HomePage> {
                 child: CustomMediaPickerContainer(
                   title: "Assets Image",
                   imageTitle: "Capture Image",
-                  multipleImage: 15,
-                  // containerHeight: ,
+                  multipleImage: 5,
                   imagePath: "assets/gallery-export.png",
                   backgroundColor: Colors.blue.shade50,
                   // imageHeight: 160,

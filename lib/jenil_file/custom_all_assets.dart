@@ -3,7 +3,7 @@ import 'package:myco_karan/jenil_file/responsive.dart';
 import '../themes_colors/colors.dart';
 import 'doted_line.dart';
 import 'inner_shadow_btn.dart';
-import '../karan_file/new_myco_button.dart';
+import '../karan_file/custom_myco_button/custom_myco_button.dart';
 
 class CustomAllAssets extends StatelessWidget {
   final String title;

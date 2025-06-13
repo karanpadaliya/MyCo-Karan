@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
-import '../karan_file/new_myco_button.dart';
-import '../karan_file/new_myco_button_theme.dart';
+import '../karan_file/custom_myco_button/custom_myco_button.dart';
+import '../karan_file/custom_myco_button/custom_myco_button_theme.dart';
 import '../themes_colors/colors.dart';
 
 class QRScannerWidget extends StatefulWidget {

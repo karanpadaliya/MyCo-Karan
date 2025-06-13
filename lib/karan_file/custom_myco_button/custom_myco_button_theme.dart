@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../themes_colors/colors.dart';
+import '../../themes_colors/colors.dart';
 
 class MyCoButtonTheme {
   static const Color mobileBackgroundColor = Color(0xFF2F648E);
