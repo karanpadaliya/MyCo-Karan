@@ -2,6 +2,7 @@ import 'dart:developer';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as path;
+import 'package:permission_handler/permission_handler.dart';
 import '../../jenil_file/app_theme.dart';
 import '../../themes_colors/colors.dart';
 import 'design_border_container.dart';
@@ -81,7 +82,16 @@ class _CustomMediaPickerContainerState
                 if (_pickedImages.length < widget.multipleImage &&
                     index == _pickedImages.length) {
                   return GestureDetector(
-                    onTap: () => openImagePicker(context),
+                    onTap: () async {
+                      final status = await _checkAndRequestPermission();
+                      if (status) {
+                        openImagePicker(context);
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Permission denied. Cannot access media.')),
+                        );
+                      }
+                    },
                     child: Container(
                       decoration: BoxDecoration(
                         color: AppColors.imagePickerBg,
@@ -261,7 +271,7 @@ class _CustomMediaPickerContainerState
         if (_pickedImages.length + imageFiles.length <= widget.multipleImage) {
           setState(() {
             _pickedImages.addAll(imageFiles);
-            pickedFile = null; // clear document
+            pickedFile = null;
           });
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -278,11 +288,32 @@ class _CustomMediaPickerContainerState
       if (documentFile != null) {
         setState(() {
           pickedFile = documentFile;
-          _pickedImages.clear(); // clear images if document is selected
+          _pickedImages.clear();
         });
       }
     } else {
       log('User cancelled or error occurred.');
     }
   }
+  Future<bool> _checkAndRequestPermission() async {
+    if (Platform.isAndroid) {
+      if (await Permission.photos.isGranted ||
+          await Permission.storage.isGranted ||
+          await Permission.mediaLibrary.isGranted) {
+        return true;
+      }
+
+      final result = await Permission.photos.request();
+      return result.isGranted;
+    } else if (Platform.isIOS) {
+      final status = await Permission.photos.status;
+      if (status.isGranted) return true;
+
+      final result = await Permission.photos.request();
+      return result.isGranted;
+    }
+
+    return false;
+  }
+
 }

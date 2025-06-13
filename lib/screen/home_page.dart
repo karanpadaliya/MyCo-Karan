@@ -62,8 +62,7 @@ class _HomePageState extends State<HomePage> {
                 child: CustomMediaPickerContainer(
                   title: "Assets Image",
                   imageTitle: "Capture Image",
-                  multipleImage: 15,
-                  // containerHeight: ,
+                  multipleImage: 5,
                   imagePath: "assets/gallery-export.png",
                   backgroundColor: Colors.blue.shade50,
                   // imageHeight: 160,

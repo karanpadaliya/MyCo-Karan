@@ -6,7 +6,7 @@ import 'package:path/path.dart' as path;
 import '../../themes_colors/app_theme.dart';
 import '../../themes_colors/colors.dart';
 import '../new_myco_button.dart';
-import 'custom_media_widget.dart';
+import 'custome_shadow_container.dart';
 
 Future<List<File>?> showImageFilePicker({
   required BuildContext context,
@@ -74,23 +74,23 @@ class _MediaFilePickerWidgetState extends State<_MediaFilePickerWidget> {
               children: [
                 GestureDetector(
                   onTap: () => _pickImage(ImageSource.camera),
-                  child: const CustomMediaWidget(
-                    imagePath: 'assets/camera.png',
+                  child: CustomShadowContainer(
+                    image: Image.asset('assets/camera.png'),
                     title: 'Camera',
                   ),
                 ),
                 const SizedBox(width: 10),
                 GestureDetector(
                   onTap: () => _pickImage(ImageSource.gallery),
-                  child: const CustomMediaWidget(
-                    imagePath: 'assets/gallery-add.png',
+                  child: CustomShadowContainer(
+                    image: Image.asset('assets/gallery-add.png'),
                     title: 'Gallery',
                   ),
                 ),
                 const SizedBox(width: 10),
                 GestureDetector(
                   onTap: _pickDocument,
-                  child: CustomMediaWidget(
+                  child: CustomShadowContainer(
                     image: Image.asset(
                       'assets/document.png',
                       width: 80,
