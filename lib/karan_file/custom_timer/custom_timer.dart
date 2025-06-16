@@ -11,7 +11,7 @@ class ColorRange {
   ColorRange(this.startMinutes, this.endMinutes, this.color);
 }
 
-class SegmentedProgressBar extends StatefulWidget {
+class CustomTimer extends StatefulWidget {
   final double maxMinutes;
   final double minutesPerSegment;
   final double strokeWidth;
@@ -21,7 +21,7 @@ class SegmentedProgressBar extends StatefulWidget {
   final List<ColorRange> colorRanges;
   final VoidCallback? onCompleted;
 
-  const SegmentedProgressBar({
+  const CustomTimer({
     Key? key,
     this.maxMinutes = 10,
     this.minutesPerSegment = 2,
@@ -34,10 +34,10 @@ class SegmentedProgressBar extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<SegmentedProgressBar> createState() => _SegmentedProgressBarState();
+  State<CustomTimer> createState() => _CustomTimerState();
 }
 
-class _SegmentedProgressBarState extends State<SegmentedProgressBar> {
+class _CustomTimerState extends State<CustomTimer> {
   late Timer _timer;
   double currentMinutes = 0;
 
@@ -93,7 +93,7 @@ class _SegmentedProgressBarState extends State<SegmentedProgressBar> {
               ],
             ),
             child: CustomPaint(
-              painter: _SegmentedProgressBarPainter(
+              painter: _CustomTimerPainter(
                 maxMinutes: widget.maxMinutes,
                 currentMinutes: currentMinutes,
                 minutesPerSegment: widget.minutesPerSegment,
@@ -141,7 +141,7 @@ class _SegmentedProgressBarState extends State<SegmentedProgressBar> {
   }
 }
 
-class _SegmentedProgressBarPainter extends CustomPainter {
+class _CustomTimerPainter extends CustomPainter {
   final double maxMinutes;
   final double currentMinutes;
   final double minutesPerSegment;
@@ -151,7 +151,7 @@ class _SegmentedProgressBarPainter extends CustomPainter {
   final List<Color> primaryColor;
   final List<ColorRange> colorRanges;
 
-  _SegmentedProgressBarPainter({
+  _CustomTimerPainter({
     required this.maxMinutes,
     required this.currentMinutes,
     required this.minutesPerSegment,

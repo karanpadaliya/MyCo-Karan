@@ -4,13 +4,11 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:marquee/marquee.dart';
 import 'package:myco_karan/karan_file/custom_media_picker/custom_media_picker_container.dart';
-import '../jenil_file/app_theme.dart';
+import 'package:myco_karan/karan_file/custom_timer/custom_timer.dart';
 import '../jenil_file/bottomsheet_otp.dart';
 import '../jenil_file/bottomsheet_radio_btn.dart';
 import '../jenil_file/bottomsheet_travel_mode.dart';
 import '../jenil_file/myco_custom_tabbar.dart';
-import '../karan_file/custom_loader/custom_loader.dart';
-import '../karan_file/timer/SegmentedProgressBar.dart';
 import '../karan_file/custom_myco_button/custom_myco_button.dart';
 import '../main.dart';
 import '../maulik_file/current_opening_card.dart';
@@ -44,7 +42,7 @@ class _HomePageState extends State<HomePage> {
           child: Column(
             children: [
               const SizedBox(height: 40),
-              SegmentedProgressBar(
+              CustomTimer(
                 maxMinutes: 11,
                 minutesPerSegment: 2,
                 strokeWidth: 25,
