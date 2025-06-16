@@ -2,7 +2,6 @@ import 'dart:developer';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as path;
-import 'package:permission_handler/permission_handler.dart';
 import '../../jenil_file/app_theme.dart';
 import '../../themes_colors/colors.dart';
 import 'design_border_container.dart';
@@ -16,6 +15,9 @@ class CustomMediaPickerContainer extends StatefulWidget {
   final int multipleImage;
   final String imagePath;
   final Color backgroundColor;
+  final bool isCameraShow;
+  final bool isGallaryShow;
+  final bool isDocumentShow;
 
   const CustomMediaPickerContainer({
     Key? key,
@@ -26,6 +28,9 @@ class CustomMediaPickerContainer extends StatefulWidget {
     required this.multipleImage,
     required this.imagePath,
     this.backgroundColor = AppColors.imagePickerBg,
+    this.isCameraShow = false,
+    this.isGallaryShow = false,
+    this.isDocumentShow = false,
   }) : super(key: key);
 
   @override
@@ -78,20 +83,11 @@ class _CustomMediaPickerContainerState
               _pickedImages.length < widget.multipleImage
                   ? _pickedImages.length + 1
                   : _pickedImages.length,
-              (index) {
+                  (index) {
                 if (_pickedImages.length < widget.multipleImage &&
                     index == _pickedImages.length) {
                   return GestureDetector(
-                    onTap: () async {
-                      final status = await _checkAndRequestPermission();
-                      if (status) {
-                        openImagePicker(context);
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Permission denied. Cannot access media.')),
-                        );
-                      }
-                    },
+                    onTap: () => openMediaPicker(context),
                     child: Container(
                       decoration: BoxDecoration(
                         color: AppColors.imagePickerBg,
@@ -150,11 +146,7 @@ class _CustomMediaPickerContainerState
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         child: Container(
           width: double.infinity,
-          height: widget.containerHeight ?? 160,
-          decoration: BoxDecoration(
-            // color: widget.backgroundColor,
-            borderRadius: BorderRadius.circular(12),
-          ),
+          decoration: BoxDecoration(borderRadius: BorderRadius.circular(12)),
           child: Row(
             children: [
               const Icon(
@@ -168,11 +160,10 @@ class _CustomMediaPickerContainerState
                   path.basename(pickedFile!.path),
                   style: TextStyle(
                     fontSize:
-                        AppTheme.lightTheme.textTheme.bodyLarge?.fontSize ?? 16,
+                    AppTheme.lightTheme.textTheme.bodyLarge?.fontSize ?? 16,
                     fontFamily: "Gilroy-Medium",
                     color: AppColors.titleColor,
                   ),
-                  overflow: TextOverflow.ellipsis,
                 ),
               ),
               GestureDetector(
@@ -190,8 +181,8 @@ class _CustomMediaPickerContainerState
                   child: Text(
                     "Remove",
                     style: TextStyle(
-                      fontSize:
-                          AppTheme.lightTheme.textTheme.bodyLarge?.fontSize ??
+                      fontSize: AppTheme
+                          .lightTheme.textTheme.bodyLarge?.fontSize ??
                           14,
                       color: AppColors.error,
                     ),
@@ -204,7 +195,7 @@ class _CustomMediaPickerContainerState
       );
     } else {
       return GestureDetector(
-        onTap: () => openImagePicker(context),
+        onTap: () => openMediaPicker(context),
         child: DesignBorderContainer(
           borderRadius: 12,
           borderColor: AppColors.primary,
@@ -228,7 +219,8 @@ class _CustomMediaPickerContainerState
                   widget.imageTitle,
                   style: TextStyle(
                     fontSize:
-                        AppTheme.lightTheme.textTheme.bodyLarge?.fontSize ?? 16,
+                    AppTheme.lightTheme.textTheme.bodyLarge?.fontSize ??
+                        16,
                     fontFamily: "Gilroy-SemiBold",
                     fontWeight: FontWeight.w400,
                     color: AppColors.titleColor,
@@ -242,9 +234,12 @@ class _CustomMediaPickerContainerState
     }
   }
 
-  void openImagePicker(BuildContext context) async {
-    final List<File>? selectedFiles = await showImageFilePicker(
+  void openMediaPicker(BuildContext context) async {
+    final List<File>? selectedFiles = await showMediaFilePicker(
       context: context,
+      isCameraShow: widget.isCameraShow,
+      isGallaryShow: widget.isGallaryShow,
+      isDocumentShow: widget.isDocumentShow,
     );
 
     if (selectedFiles != null && selectedFiles.isNotEmpty) {
@@ -254,7 +249,7 @@ class _CustomMediaPickerContainerState
       for (final file in selectedFiles) {
         final String extension = path.extension(file.path).toLowerCase();
 
-        if (['.png', '.jpg', '.jpeg', '.heic','.heif'].contains(extension)) {
+        if (['.png', '.jpg', '.jpeg', '.heic', '.heif'].contains(extension)) {
           imageFiles.add(file);
         } else if (['.pdf', '.doc', '.docx'].contains(extension)) {
           documentFile = file;
@@ -266,7 +261,6 @@ class _CustomMediaPickerContainerState
         }
       }
 
-      // Handle image files
       if (imageFiles.isNotEmpty) {
         if (_pickedImages.length + imageFiles.length <= widget.multipleImage) {
           setState(() {
@@ -284,7 +278,6 @@ class _CustomMediaPickerContainerState
         }
       }
 
-      // Handle single document
       if (documentFile != null) {
         setState(() {
           pickedFile = documentFile;
@@ -295,25 +288,4 @@ class _CustomMediaPickerContainerState
       log('User cancelled or error occurred.');
     }
   }
-  Future<bool> _checkAndRequestPermission() async {
-    if (Platform.isAndroid) {
-      if (await Permission.photos.isGranted ||
-          await Permission.storage.isGranted ||
-          await Permission.mediaLibrary.isGranted) {
-        return true;
-      }
-
-      final result = await Permission.photos.request();
-      return result.isGranted;
-    } else if (Platform.isIOS) {
-      final status = await Permission.photos.status;
-      if (status.isGranted) return true;
-
-      final result = await Permission.photos.request();
-      return result.isGranted;
-    }
-
-    return false;
-  }
-
 }
