@@ -44,6 +44,7 @@ dependencies:
   mobile_scanner:
   table_calendar:
   permission_handler:
+  lottie: ^3.3.1
 
 dev_dependencies:
   flutter_test:
@@ -71,6 +72,7 @@ flutter:
   assets:
     - assets/
     - assets/travelmodeicon/
+    - assets/loader/
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

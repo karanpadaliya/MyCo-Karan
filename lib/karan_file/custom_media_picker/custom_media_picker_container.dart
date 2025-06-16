@@ -16,6 +16,9 @@ class CustomMediaPickerContainer extends StatefulWidget {
   final int multipleImage;
   final String imagePath;
   final Color backgroundColor;
+  final bool isCameraShow;
+  final bool isGallaryShow;
+  final bool isDocumentShow;
 
   const CustomMediaPickerContainer({
     Key? key,
@@ -26,6 +29,9 @@ class CustomMediaPickerContainer extends StatefulWidget {
     required this.multipleImage,
     required this.imagePath,
     this.backgroundColor = AppColors.imagePickerBg,
+    this.isCameraShow = false,
+    this.isGallaryShow = false,
+    this.isDocumentShow = false,
   }) : super(key: key);
 
   @override
@@ -85,10 +91,14 @@ class _CustomMediaPickerContainerState
                     onTap: () async {
                       final status = await _checkAndRequestPermission();
                       if (status) {
-                        openImagePicker(context);
+                        openMediaPicker(context);
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Permission denied. Cannot access media.')),
+                          const SnackBar(
+                            content: Text(
+                              'Permission denied. Cannot access media.',
+                            ),
+                          ),
                         );
                       }
                     },
@@ -150,11 +160,7 @@ class _CustomMediaPickerContainerState
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         child: Container(
           width: double.infinity,
-          height: widget.containerHeight ?? 160,
-          decoration: BoxDecoration(
-            // color: widget.backgroundColor,
-            borderRadius: BorderRadius.circular(12),
-          ),
+          decoration: BoxDecoration(borderRadius: BorderRadius.circular(12)),
           child: Row(
             children: [
               const Icon(
@@ -172,7 +178,6 @@ class _CustomMediaPickerContainerState
                     fontFamily: "Gilroy-Medium",
                     color: AppColors.titleColor,
                   ),
-                  overflow: TextOverflow.ellipsis,
                 ),
               ),
               GestureDetector(
@@ -204,7 +209,7 @@ class _CustomMediaPickerContainerState
       );
     } else {
       return GestureDetector(
-        onTap: () => openImagePicker(context),
+        onTap: () => openMediaPicker(context),
         child: DesignBorderContainer(
           borderRadius: 12,
           borderColor: AppColors.primary,
@@ -242,9 +247,13 @@ class _CustomMediaPickerContainerState
     }
   }
 
-  void openImagePicker(BuildContext context) async {
-    final List<File>? selectedFiles = await showImageFilePicker(
+  void openMediaPicker(BuildContext context) async {
+    final List<File>? selectedFiles = await showMediaFilePicker(
       context: context,
+      // selectDocument: true
+      isCameraShow: widget.isCameraShow,
+      isGallaryShow: widget.isGallaryShow,
+      isDocumentShow: widget.isDocumentShow,
     );
 
     if (selectedFiles != null && selectedFiles.isNotEmpty) {
@@ -254,7 +263,7 @@ class _CustomMediaPickerContainerState
       for (final file in selectedFiles) {
         final String extension = path.extension(file.path).toLowerCase();
 
-        if (['.png', '.jpg', '.jpeg', '.heic','.heif'].contains(extension)) {
+        if (['.png', '.jpg', '.jpeg', '.heic', '.heif'].contains(extension)) {
           imageFiles.add(file);
         } else if (['.pdf', '.doc', '.docx'].contains(extension)) {
           documentFile = file;
@@ -295,6 +304,7 @@ class _CustomMediaPickerContainerState
       log('User cancelled or error occurred.');
     }
   }
+
   Future<bool> _checkAndRequestPermission() async {
     if (Platform.isAndroid) {
       if (await Permission.photos.isGranted ||
@@ -315,5 +325,4 @@ class _CustomMediaPickerContainerState
 
     return false;
   }
-
 }

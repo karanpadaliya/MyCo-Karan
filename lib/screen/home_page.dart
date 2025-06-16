@@ -9,6 +9,7 @@ import '../jenil_file/bottomsheet_otp.dart';
 import '../jenil_file/bottomsheet_radio_btn.dart';
 import '../jenil_file/bottomsheet_travel_mode.dart';
 import '../jenil_file/myco_custom_tabbar.dart';
+import '../karan_file/custom_loader/custom_loader.dart';
 import '../karan_file/timer/SegmentedProgressBar.dart';
 import '../karan_file/custom_myco_button/custom_myco_button.dart';
 import '../main.dart';
@@ -65,7 +66,10 @@ class _HomePageState extends State<HomePage> {
                   multipleImage: 5,
                   imagePath: "assets/gallery-export.png",
                   backgroundColor: Colors.blue.shade50,
-                  // imageHeight: 160,
+                  isCameraShow: true,
+                  isGallaryShow: true,
+                  isDocumentShow: true,
+                  // containerHeight: 200,
                 ),
               ),
               const SizedBox(height: 20),
