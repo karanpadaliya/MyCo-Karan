@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'dart:io';
 
@@ -16,6 +17,20 @@ enum AppPermission {
 }
 
 class PermissionUtil {
+  static const MethodChannel _channel = MethodChannel('custom.permission/channel');
+
+  static Future<int> getAndroidSdkInt() async {
+    if (Platform.isAndroid) {
+      try {
+        final int sdkInt = await _channel.invokeMethod('getAndroidSdkInt');
+        return sdkInt;
+      } catch (e) {
+        return 0;
+      }
+    }
+    return 0;
+  }
+
   /// Request a single permission
   static Future<bool> requestPermission(AppPermission permission) async {
     final status = await _getPermission(permission).request();
@@ -153,17 +168,26 @@ class PermissionUtil {
     }
   }
 
-  /// Optional helper to check permission based on picker type
   static Future<bool> checkPermissionByPickerType(
-    String type,
-    BuildContext context,
-  ) async {
+      String type,
+      BuildContext context,
+      ) async {
     bool granted = false;
 
     if (type == 'camera') {
       granted = await PermissionUtil.requestPermission(AppPermission.camera);
+
     } else if (type == 'gallery') {
-      granted = await PermissionUtil.requestPermission(AppPermission.storage);
+      int sdkInt = await PermissionUtil.getAndroidSdkInt();
+
+      if (Platform.isAndroid && sdkInt < 33) {
+        // Android 12 (API 32) and below
+        granted = await PermissionUtil.requestPermission(AppPermission.storage);
+      } else {
+        // Android 13+ (API 33+)
+        granted = await PermissionUtil.requestPermission(AppPermission.photos);
+      }
+
     } else if (type == 'document') {
       if (Platform.isAndroid) {
         granted = await PermissionUtil.requestPermission(

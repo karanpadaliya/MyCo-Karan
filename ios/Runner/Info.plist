@@ -28,6 +28,8 @@
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
+
+	<!-- Supported orientations -->
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
@@ -41,37 +43,32 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+
+	<!-- Required Permissions -->
+	<key>NSCameraUsageDescription</key>
+	<string>We need access to your camera to take pictures or record videos.</string>
+
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>We need access to your photo library to select images and videos.</string>
+
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>This app needs permission to save photos and videos to your library.</string>
+
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<true/>
+	<key>UIFileSharingEnabled</key>
+	<true/>
+
+	<!-- Optional: Required if using background fetch/location -->
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>fetch</string>
+	</array>
+
+	<!-- Flutter specific -->
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
-	<key>NSCameraUsageDescription</key>
-    <string>We need access to your camera for capturing photos and videos.</string>
-
-    <key>NSPhotoLibraryUsageDescription</key>
-    <string>We need access to your photo library to pick images.</string>
-    <key>NSDocumentsFolderUsageDescription</key>
-    <string>We need access to documents.</string>
-
-    <key>NSPhotoLibraryAddUsageDescription</key>
-    <string>We need permission to save images and videos to your photo library.</string>
-
-    <key>NSLocationWhenInUseUsageDescription</key>
-    <string>We need your location to provide better services while using the app.</string>
-
-    <key>NSLocationAlwaysUsageDescription</key>
-    <string>We use your location in the background for accurate services.</string>
-
-    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-    <string>We need your location always and while using the app to improve functionality.</string>
-
-    <key>NSBluetoothAlwaysUsageDescription</key>
-    <string>Bluetooth access is needed for device communication (if applicable).</string>
-
-    <key>UIBackgroundModes</key>
-    <array>
-        <string>location</string>
-        <string>fetch</string>
-    </array>
 </dict>
 </plist>
