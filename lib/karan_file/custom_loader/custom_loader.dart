@@ -10,7 +10,7 @@ class CustomLoader extends StatelessWidget {
         const ModalBarrier(dismissible: false, color: Colors.black38),
         Center(
           child: Container(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(20),
@@ -26,7 +26,6 @@ class CustomLoader extends StatelessWidget {
               'assets/loader/myco_loading.gif',
               width: 120,
               height: 120,
-              fit: BoxFit.contain,
             ),
           ),
         ),

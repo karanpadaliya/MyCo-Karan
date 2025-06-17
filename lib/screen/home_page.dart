@@ -9,6 +9,7 @@ import '../jenil_file/bottomsheet_otp.dart';
 import '../jenil_file/bottomsheet_radio_btn.dart';
 import '../jenil_file/bottomsheet_travel_mode.dart';
 import '../jenil_file/myco_custom_tabbar.dart';
+import '../karan_file/custom_media_picker/media_picker.dart';
 import '../karan_file/custom_myco_button/custom_myco_button.dart';
 import '../main.dart';
 import '../maulik_file/current_opening_card.dart';
@@ -115,6 +116,24 @@ class _HomePageState extends State<HomePage> {
               ),
               const SizedBox(height: 50),
 
+              MyCoButton(
+                title: "Media Picker",
+                boarderRadius: 50,
+                isShadowBottomLeft: true,
+                isShadowBottomRight: true,
+                textStyle: TextStyle(color: AppColors.white),
+                onTap: () {
+                  showMediaFilePicker(
+                    context: context,
+                    isDialog: true,
+                    maxCount: 5,
+                    isCameraShow: true,
+                    isDocumentShow: true,
+                    isGallaryShow: true,
+                  );
+                },
+              ),
+              const SizedBox(height: 50),
               MyCoButton(
                 title: "Travel mode Bottom Sheet",
                 boarderRadius: 50,

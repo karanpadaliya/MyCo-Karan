@@ -2,9 +2,11 @@ import 'dart:developer';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as path;
+import 'package:photo_manager/photo_manager.dart';
 import '../../jenil_file/app_theme.dart';
 import '../../themes_colors/colors.dart';
 import 'design_border_container.dart';
+import 'gallery_picker_screen.dart';
 import 'media_picker.dart';
 
 class CustomMediaPickerContainer extends StatefulWidget {
@@ -38,8 +40,7 @@ class CustomMediaPickerContainer extends StatefulWidget {
       _CustomMediaPickerContainerState();
 }
 
-class _CustomMediaPickerContainerState
-    extends State<CustomMediaPickerContainer> {
+class _CustomMediaPickerContainerState extends State<CustomMediaPickerContainer> {
   List<File> _pickedImages = [];
   File? pickedFile;
 
@@ -149,11 +150,7 @@ class _CustomMediaPickerContainerState
           decoration: BoxDecoration(borderRadius: BorderRadius.circular(12)),
           child: Row(
             children: [
-              const Icon(
-                Icons.insert_drive_file,
-                color: AppColors.primary,
-                size: 40,
-              ),
+              const Icon(Icons.insert_drive_file, color: AppColors.primary, size: 40),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
@@ -169,10 +166,7 @@ class _CustomMediaPickerContainerState
               GestureDetector(
                 onTap: () => setState(() => pickedFile = null),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 2,
-                    horizontal: 6,
-                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 6),
                   decoration: BoxDecoration(
                     color: AppColors.removeBackground,
                     border: Border.all(color: AppColors.remove),
@@ -181,9 +175,7 @@ class _CustomMediaPickerContainerState
                   child: Text(
                     "Remove",
                     style: TextStyle(
-                      fontSize: AppTheme
-                          .lightTheme.textTheme.bodyLarge?.fontSize ??
-                          14,
+                      fontSize: AppTheme.lightTheme.textTheme.bodyLarge?.fontSize ?? 14,
                       color: AppColors.error,
                     ),
                   ),
@@ -219,8 +211,7 @@ class _CustomMediaPickerContainerState
                   widget.imageTitle,
                   style: TextStyle(
                     fontSize:
-                    AppTheme.lightTheme.textTheme.bodyLarge?.fontSize ??
-                        16,
+                    AppTheme.lightTheme.textTheme.bodyLarge?.fontSize ?? 16,
                     fontFamily: "Gilroy-SemiBold",
                     fontWeight: FontWeight.w400,
                     color: AppColors.titleColor,
@@ -235,12 +226,35 @@ class _CustomMediaPickerContainerState
   }
 
   void openMediaPicker(BuildContext context) async {
-    final List<File>? selectedFiles = await showMediaFilePicker(
-      context: context,
-      isCameraShow: widget.isCameraShow,
-      isGallaryShow: widget.isGallaryShow,
-      isDocumentShow: widget.isDocumentShow,
-    );
+    List<File>? selectedFiles = [];
+
+    if (widget.isGallaryShow && !widget.isCameraShow && !widget.isDocumentShow) {
+      selectedFiles = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => GalleryPickerScreen(
+            maxSelection: widget.multipleImage,
+            onSelectionDone: (List<AssetEntity> assets) async {
+              List<File> files = [];
+              for (final asset in assets) {
+                final file = await asset.file;
+                if (file != null) {
+                  files.add(file);
+                }
+              }
+              Navigator.pop(context, files);
+            },
+          ),
+        ),
+      );
+    } else {
+      selectedFiles = await showMediaFilePicker(
+        context: context,
+        isCameraShow: widget.isCameraShow,
+        isGallaryShow: widget.isGallaryShow,
+        isDocumentShow: widget.isDocumentShow,
+      );
+    }
 
     if (selectedFiles != null && selectedFiles.isNotEmpty) {
       final List<File> imageFiles = [];

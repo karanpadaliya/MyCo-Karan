@@ -3,20 +3,23 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart' as path;
+import 'package:photo_manager/photo_manager.dart';
+
 import '../../themes_colors/app_theme.dart';
 import '../../themes_colors/colors.dart';
 import '../app_permissions/app_permissions.dart';
 import '../custom_loader/custom_loader.dart';
 import '../custom_myco_button/custom_myco_button.dart';
 import 'custome_shadow_container.dart';
+import 'gallery_picker_screen.dart';
 
 Future<List<File>?> showMediaFilePicker({
   required BuildContext context,
   bool? isDialog,
-  bool? selectDocument,
   bool isCameraShow = false,
   bool isGallaryShow = false,
   bool isDocumentShow = false,
+  int maxCount = 5,
 }) async {
   bool _isLoading = false;
 
@@ -31,11 +34,11 @@ Future<List<File>?> showMediaFilePicker({
               contentPadding: const EdgeInsets.all(0),
               backgroundColor: AppColors.white,
               content: _MediaFilePickerWidget(
-                selectDocument: selectDocument,
                 isCameraShow: isCameraShow,
                 isGallaryShow: isGallaryShow,
                 isDocumentShow: isDocumentShow,
                 onLoading: (val) => setState(() => _isLoading = val),
+                maxCount: maxCount,
               ),
             ),
             if (_isLoading) const Center(child: CustomLoader()),
@@ -47,58 +50,128 @@ Future<List<File>?> showMediaFilePicker({
       : showDialog<List<File>>(
     context: context,
     barrierColor: Colors.transparent,
+    barrierDismissible: false,
     builder: (context) {
-      return StatefulBuilder(
-        builder: (context, setState) => Stack(
-          children: [
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: Material(
-                color: Colors.transparent,
-                child: Container(
-                  constraints: const BoxConstraints(maxHeight: 400),
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(24),
-                    ),
-                  ),
-                  child: _MediaFilePickerWidget(
-                    selectDocument: selectDocument,
-                    isCameraShow: isCameraShow,
-                    isGallaryShow: isGallaryShow,
-                    isDocumentShow: isDocumentShow,
-                    onLoading: (val) => setState(() => _isLoading = val),
-                  ),
-                ),
-              ),
-            ),
-            if (_isLoading)
-              Container(
-                color: Colors.black.withOpacity(0.3),
-                child: const Center(child: CustomLoader()),
-              ),
-          ],
-        ),
+      return _AnimatedBottomSheet(
+        isCameraShow: isCameraShow,
+        isGallaryShow: isGallaryShow,
+        isDocumentShow: isDocumentShow,
+        maxCount: maxCount,
       );
     },
   );
 }
 
-class _MediaFilePickerWidget extends StatefulWidget {
-  final bool? selectDocument;
+// ==================== SLIDE-UP ANIMATION WRAPPER ====================
+
+class _AnimatedBottomSheet extends StatefulWidget {
   final bool isCameraShow;
   final bool isGallaryShow;
   final bool isDocumentShow;
+  final int maxCount;
+
+  const _AnimatedBottomSheet({
+    Key? key,
+    required this.isCameraShow,
+    required this.isGallaryShow,
+    required this.isDocumentShow,
+    required this.maxCount,
+  }) : super(key: key);
+
+  @override
+  State<_AnimatedBottomSheet> createState() => _AnimatedBottomSheetState();
+}
+
+class _AnimatedBottomSheetState extends State<_AnimatedBottomSheet>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<Offset> _offsetAnimation;
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 400),
+    );
+    _offsetAnimation = Tween<Offset>(
+      begin: const Offset(0.0, 1.0),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOutCubic,
+    ));
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _setLoading(bool value) {
+    setState(() => _isLoading = value);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        GestureDetector(
+          onTap: () => Navigator.pop(context),
+          child: Container(color: Colors.black.withOpacity(0.3)),
+        ),
+        Align(
+          alignment: Alignment.bottomCenter,
+          child: SlideTransition(
+            position: _offsetAnimation,
+            child: Material(
+              color: Colors.transparent,
+              child: Container(
+                constraints: const BoxConstraints(maxHeight: 400),
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                ),
+                child: _MediaFilePickerWidget(
+                  isCameraShow: widget.isCameraShow,
+                  isGallaryShow: widget.isGallaryShow,
+                  isDocumentShow: widget.isDocumentShow,
+                  onLoading: _setLoading,
+                  maxCount: widget.maxCount,
+                ),
+              ),
+            ),
+          ),
+        ),
+        if (_isLoading)
+          Container(
+            color: Colors.black.withOpacity(0.3),
+            child: const Center(child: CustomLoader()),
+          ),
+      ],
+    );
+  }
+}
+
+// ==================== BOTTOM PICKER CONTENT ====================
+
+class _MediaFilePickerWidget extends StatefulWidget {
+  final bool isCameraShow;
+  final bool isGallaryShow;
+  final bool isDocumentShow;
+  final int maxCount;
   final void Function(bool)? onLoading;
 
   const _MediaFilePickerWidget({
     Key? key,
-    this.selectDocument,
     this.isCameraShow = false,
     this.isGallaryShow = false,
     this.isDocumentShow = false,
     this.onLoading,
+    this.maxCount = 5,
   }) : super(key: key);
 
   @override
@@ -166,9 +239,7 @@ class _MediaFilePickerWidgetState extends State<_MediaFilePickerWidget> {
             padding: const EdgeInsets.symmetric(horizontal: 20.0),
             child: MyCoButton(
               isShadowBottomLeft: true,
-              onTap: () {
-                Navigator.pop(context);
-              },
+              onTap: () => Navigator.pop(context),
               boarderRadius: 50,
               title: 'Cancel',
             ),
@@ -180,48 +251,38 @@ class _MediaFilePickerWidgetState extends State<_MediaFilePickerWidget> {
 
   Future<void> _pickImage(ImageSource source) async {
     try {
-      final hasPermission = await PermissionUtil.requestPermission(
-        source == ImageSource.camera ? AppPermission.camera : AppPermission.storage,
+      final hasPermission = await PermissionUtil.checkPermissionByPickerType(
+        source == ImageSource.camera ? 'camera' : 'gallery',
+        context,
       );
 
-      if (!hasPermission) {
-        PermissionUtil.showPermissionDeniedDialog(
-          context,
-          message: source == ImageSource.camera
-              ? "Camera access is required to take pictures."
-              : "Photos access is required to pick images from gallery.",
-        );
-        return;
-      }
+      if (!hasPermission) return;
 
       widget.onLoading?.call(true);
 
       if (source == ImageSource.gallery) {
-        final List<XFile>? pickedFiles = await _picker.pickMultiImage(
-          maxWidth: 800,
-          maxHeight: 800,
-          imageQuality: 80,
+        await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => GalleryPickerScreen(
+              maxSelection: widget.maxCount,
+              onSelectionDone: (List<AssetEntity> assets) async {
+                List<File> files = [];
+                for (final asset in assets) {
+                  final file = await asset.file;
+                  if (file != null) files.add(file);
+                }
+
+                if (files.isNotEmpty && mounted) {
+                  Navigator.pop(context); // Close GalleryPickerScreen
+                  Navigator.pop(context, files); // Return selected files
+                } else if (mounted) {
+                  Navigator.pop(context);
+                }
+              },
+            ),
+          ),
         );
-
-        if (pickedFiles != null && pickedFiles.isNotEmpty) {
-          final List<File> validImages = pickedFiles
-              .where((file) {
-            final extension = path.extension(file.path).toLowerCase();
-            return ['.png', '.jpg', '.jpeg', '.heic', '.heif'].contains(extension);
-          })
-              .map((file) => File(file.path))
-              .toList();
-
-          if (validImages.isNotEmpty && mounted) {
-            Navigator.pop(context, validImages);
-          } else if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text("No valid images selected.")),
-            );
-          }
-        } else {
-          Navigator.pop(context);
-        }
       } else {
         final XFile? pickedFile = await _picker.pickImage(
           source: source,
@@ -238,7 +299,9 @@ class _MediaFilePickerWidgetState extends State<_MediaFilePickerWidget> {
             if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
-                  content: Text("Invalid file type. Use PNG, JPG, JPEG, HEIC or HEIF."),
+                  content: Text(
+                    "Invalid file type. Use PNG, JPG, JPEG, HEIC or HEIF.",
+                  ),
                 ),
               );
             }
@@ -257,15 +320,12 @@ class _MediaFilePickerWidgetState extends State<_MediaFilePickerWidget> {
 
   Future<void> _pickDocument() async {
     try {
-      final hasPermission = await PermissionUtil.requestPermission(AppPermission.manageExternalStorage);
+      final hasPermission = await PermissionUtil.checkPermissionByPickerType(
+        'document',
+        context,
+      );
 
-      if (!hasPermission) {
-        PermissionUtil.showPermissionDeniedDialog(
-          context,
-          message: "Storage access is required to select documents.",
-        );
-        return;
-      }
+      if (!hasPermission) return;
 
       widget.onLoading?.call(true);
 
