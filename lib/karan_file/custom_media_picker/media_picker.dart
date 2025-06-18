@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart' as path;
 import 'package:photo_manager/photo_manager.dart';
-
 import '../../themes_colors/app_theme.dart';
 import '../../themes_colors/colors.dart';
 import '../app_permissions/app_permissions.dart';
@@ -12,6 +11,7 @@ import '../custom_loader/custom_loader.dart';
 import '../custom_myco_button/custom_myco_button.dart';
 import 'custome_shadow_container.dart';
 import 'gallery_picker_screen.dart';
+import 'image_file_validator.dart';
 
 Future<List<File>?> showMediaFilePicker({
   required BuildContext context,
@@ -25,41 +25,42 @@ Future<List<File>?> showMediaFilePicker({
 
   return isDialog == true
       ? showDialog<List<File>>(
-    context: context,
-    builder: (context) {
-      return StatefulBuilder(
-        builder: (context, setState) => Stack(
-          children: [
-            AlertDialog(
-              contentPadding: const EdgeInsets.all(0),
-              backgroundColor: AppColors.white,
-              content: _MediaFilePickerWidget(
-                isCameraShow: isCameraShow,
-                isGallaryShow: isGallaryShow,
-                isDocumentShow: isDocumentShow,
-                onLoading: (val) => setState(() => _isLoading = val),
-                maxCount: maxCount,
-              ),
-            ),
-            if (_isLoading) const Center(child: CustomLoader()),
-          ],
-        ),
-      );
-    },
-  )
+        context: context,
+        builder: (context) {
+          return StatefulBuilder(
+            builder:
+                (context, setState) => Stack(
+                  children: [
+                    AlertDialog(
+                      contentPadding: const EdgeInsets.all(0),
+                      backgroundColor: AppColors.white,
+                      content: _MediaFilePickerWidget(
+                        isCameraShow: isCameraShow,
+                        isGallaryShow: isGallaryShow,
+                        isDocumentShow: isDocumentShow,
+                        onLoading: (val) => setState(() => _isLoading = val),
+                        maxCount: maxCount,
+                      ),
+                    ),
+                    if (_isLoading) const Center(child: CustomLoader()),
+                  ],
+                ),
+          );
+        },
+      )
       : showDialog<List<File>>(
-    context: context,
-    barrierColor: Colors.transparent,
-    barrierDismissible: false,
-    builder: (context) {
-      return _AnimatedBottomSheet(
-        isCameraShow: isCameraShow,
-        isGallaryShow: isGallaryShow,
-        isDocumentShow: isDocumentShow,
-        maxCount: maxCount,
+        context: context,
+        barrierColor: Colors.transparent,
+        barrierDismissible: false,
+        builder: (context) {
+          return _AnimatedBottomSheet(
+            isCameraShow: isCameraShow,
+            isGallaryShow: isGallaryShow,
+            isDocumentShow: isDocumentShow,
+            maxCount: maxCount,
+          );
+        },
       );
-    },
-  );
 }
 
 // ==================== SLIDE-UP ANIMATION WRAPPER ====================
@@ -98,10 +99,7 @@ class _AnimatedBottomSheetState extends State<_AnimatedBottomSheet>
     _offsetAnimation = Tween<Offset>(
       begin: const Offset(0.0, 1.0),
       end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeOutCubic,
-    ));
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
     _controller.forward();
   }
 
@@ -264,23 +262,42 @@ class _MediaFilePickerWidgetState extends State<_MediaFilePickerWidget> {
         await Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => GalleryPickerScreen(
-              maxSelection: widget.maxCount,
-              onSelectionDone: (List<AssetEntity> assets) async {
-                List<File> files = [];
-                for (final asset in assets) {
-                  final file = await asset.file;
-                  if (file != null) files.add(file);
-                }
+            builder:
+                (context) => GalleryPickerScreen(
+                  maxSelection: widget.maxCount,
+                  onSelectionDone: (List<AssetEntity> assets) async {
+                    List<File> files = [];
 
-                if (files.isNotEmpty && mounted) {
-                  Navigator.pop(context);
-                  Navigator.pop(context, files);
-                } else if (mounted) {
-                  Navigator.pop(context);
-                }
-              },
-            ),
+                    for (final asset in assets) {
+                      final file = await asset.file;
+                      if (file != null) files.add(file);
+                    }
+
+                    if (files.isEmpty || !mounted) {
+                      if (mounted) Navigator.pop(context);
+                      return;
+                    }
+
+                    // ✅ Validate files
+                    final result = await ImageFileValidator.validateFiles(
+                      files,
+                    );
+
+                    if (result.invalidFiles.isNotEmpty && mounted) {
+                      ImageFileValidator.showInvalidFilesBottomSheet(
+                        context,
+                        result.invalidFiles,
+                      );
+                    }
+
+                    if (result.validFiles.isNotEmpty && mounted) {
+                      Navigator.pop(context);
+                      Navigator.pop(context, result.validFiles);
+                    } else if (mounted) {
+                      Navigator.pop(context);
+                    }
+                  },
+                ),
           ),
         );
       } else {
@@ -292,22 +309,21 @@ class _MediaFilePickerWidgetState extends State<_MediaFilePickerWidget> {
         );
 
         if (pickedFile != null) {
-          final extension = path.extension(pickedFile.path).toLowerCase();
-          if (['.png', '.jpg', '.jpeg', '.heic', '.heif'].contains(extension)) {
-            if (mounted) Navigator.pop(context, [File(pickedFile.path)]);
-          } else {
-            if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text(
-                    "Invalid file type. Use PNG, JPG, JPEG, HEIC or HEIF.",
-                  ),
-                ),
-              );
-            }
+          final file = File(pickedFile.path);
+          final result = await ImageFileValidator.validateFiles([file]);
+
+          if (result.invalidFiles.isNotEmpty && mounted) {
+            ImageFileValidator.showInvalidFilesBottomSheet(
+              context,
+              result.invalidFiles,
+            );
+          }
+
+          if (result.validFiles.isNotEmpty && mounted) {
+            Navigator.pop(context, result.validFiles);
           }
         } else {
-          Navigator.pop(context);
+          if (mounted) Navigator.pop(context);
         }
       }
     } catch (e) {

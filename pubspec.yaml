@@ -45,7 +45,6 @@ dependencies:
   lottie: ^3.3.1
   image_picker: ^1.1.2
   file_picker:
-  multi_image_picker_view: ^3.0.0
   photo_manager: ^3.7.1
   shimmer: ^3.0.0
 
