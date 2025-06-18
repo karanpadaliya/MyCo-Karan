@@ -126,59 +126,63 @@ class ImageFileValidator {
                   const Text(
                     'Some files were discarded because they are either unsupported format (e.g., WebP) or larger than 5MB.\n\nSupported formats: PNG, JPG, JPEG, HEIC.\nMax size: 5MB.',
                     style: TextStyle(color: Colors.red, fontSize: 14),
-                    textAlign: TextAlign.center,
+                    textAlign: TextAlign.start,
                   ),
                   const SizedBox(height: 16),
                   Wrap(
                     spacing: 12,
                     runSpacing: 12,
-                    children: invalidFiles.map((item) {
-                      final File file = item['file'];
-                      final String reason = item['reason'];
-                      final String ext = path
-                          .extension(file.path)
-                          .toLowerCase();
-                      final String fileName = path.basename(file.path);
-                      final String reasonText = reason == 'format'
-                          ? 'Unsupported ($ext)'
-                          : 'Too large (>5MB)';
+                    children:
+                        invalidFiles.map((item) {
+                          final File file = item['file'];
+                          final String reason = item['reason'];
+                          final String ext =
+                              path.extension(file.path).toLowerCase();
+                          final String fileName = path.basename(file.path);
+                          final String reasonText =
+                              reason == 'format'
+                                  ? 'Unsupported ($ext)'
+                                  : 'Too large (>5MB)';
 
-                      return Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            width: 100,
-                            height: 100,
-                            decoration: BoxDecoration(
-                              border: Border.all(color: Colors.grey),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: Image.file(
-                                file,
-                                fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) =>
-                                    const Icon(Icons.broken_image, size: 40),
+                          return Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                width: 100,
+                                height: 100,
+                                decoration: BoxDecoration(
+                                  border: Border.all(color: Colors.grey),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: Image.file(
+                                    file,
+                                    fit: BoxFit.cover,
+                                    errorBuilder:
+                                        (_, __, ___) => const Icon(
+                                          Icons.broken_image,
+                                          size: 40,
+                                        ),
+                                  ),
+                                ),
                               ),
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            reasonText,
-                            style: const TextStyle(
-                              color: Colors.red,
-                              fontSize: 12,
-                            ),
-                          ),
-                          Text(
-                            fileName,
-                            style: const TextStyle(fontSize: 11),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                      );
-                    }).toList(),
+                              const SizedBox(height: 4),
+                              Text(
+                                reasonText,
+                                style: const TextStyle(
+                                  color: Colors.red,
+                                  fontSize: 12,
+                                ),
+                              ),
+                              Text(
+                                fileName,
+                                style: const TextStyle(fontSize: 11),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          );
+                        }).toList(),
                   ),
                   const SizedBox(height: 24),
                   ElevatedButton(
