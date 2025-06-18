@@ -33,19 +33,19 @@ class PermissionUtil {
     return 0;
   }
 
-  /// Request a single permission
+  // Request a single permission
   static Future<bool> requestPermission(AppPermission permission) async {
     final status = await _getPermission(permission).request();
     return status.isGranted;
   }
 
-  /// Check if a single permission is granted
+  // Check if a single permission is granted
   static Future<bool> isPermissionGranted(AppPermission permission) async {
     final status = await _getPermission(permission).status;
     return status.isGranted;
   }
 
-  /// Request multiple permissions
+  // Request multiple permissions
   static Future<Map<AppPermission, bool>> requestMultiplePermissions(
     List<AppPermission> permissions,
   ) async {
@@ -59,12 +59,12 @@ class PermissionUtil {
     return results;
   }
 
-  /// Open app settings
+  // Open app settings
   static Future<bool> openAppSettingsPage() async {
     return await openAppSettings();
   }
 
-  /// Show dialog when permission is denied
+  // Show dialog when permission is denied
   static void showPermissionDeniedDialog(
     BuildContext context, {
     String message = 'Permission denied to access media.',
@@ -146,7 +146,7 @@ class PermissionUtil {
     );
   }
 
-  /// Map enum to real platform permission
+  // Map enum to real platform permission
   static Permission _getPermission(AppPermission permission) {
     switch (permission) {
       case AppPermission.camera:
