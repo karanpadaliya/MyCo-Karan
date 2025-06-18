@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:photo_manager/photo_manager.dart';
+import 'package:shimmer/shimmer.dart';
 
 import '../../themes_colors/colors.dart';
 import '../app_permissions/app_permissions.dart';
@@ -35,8 +36,6 @@ class _GalleryPickerScreenState extends State<GalleryPickerScreen> {
 
   Future<void> _loadGallery(BuildContext context) async {
     _isLoading.value = true;
-
-    // Use your custom PermissionUtil
     bool hasPermission = await PermissionUtil.checkPermissionByPickerType(
       'gallery',
       context,
@@ -78,7 +77,7 @@ class _GalleryPickerScreenState extends State<GalleryPickerScreen> {
         if (snapshot.connectionState == ConnectionState.done &&
             snapshot.hasData) {
           return ClipRRect(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(12),
             child: Image.memory(
               snapshot.data!,
               fit: BoxFit.cover,
@@ -87,7 +86,19 @@ class _GalleryPickerScreenState extends State<GalleryPickerScreen> {
             ),
           );
         } else {
-          return const Center(child: CircularProgressIndicator(strokeWidth: 2));
+          // Shimmer loading effect
+          return ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Shimmer.fromColors(
+              baseColor: Colors.grey.shade300,
+              highlightColor: Colors.grey.shade100,
+              child: Container(
+                width: double.infinity,
+                height: double.infinity,
+                color: Colors.white,
+              ),
+            ),
+          );
         }
       },
     );
@@ -105,18 +116,19 @@ class _GalleryPickerScreenState extends State<GalleryPickerScreen> {
     return Scaffold(
       backgroundColor: AppColors.white,
       appBar: AppBar(
-        backgroundColor: AppColors.white,
-        elevation: 1,
+        backgroundColor: AppColors.primary,
+        foregroundColor: AppColors.white,
+        elevation: 2,
         title: ValueListenableBuilder<List<AssetEntity>>(
           valueListenable: selectedAssets,
           builder: (_, selected, __) {
             return Text(
               'Selected: ${selected.length}/${widget.maxSelection}',
-              style: const TextStyle(color: AppColors.black),
+              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 18),
             );
           },
         ),
-        iconTheme: const IconThemeData(color: AppColors.black),
+        iconTheme: const IconThemeData(color: AppColors.white),
       ),
       body: ValueListenableBuilder<bool>(
         valueListenable: _isLoading,
@@ -125,48 +137,74 @@ class _GalleryPickerScreenState extends State<GalleryPickerScreen> {
             return const Center(child: CustomLoader());
           }
           return GridView.builder(
-            padding: const EdgeInsets.all(6),
+            padding: const EdgeInsets.all(10),
             itemCount: mediaList.length,
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 3,
-              crossAxisSpacing: 6,
-              mainAxisSpacing: 6,
+              crossAxisSpacing: 8,
+              mainAxisSpacing: 8,
               childAspectRatio: 1,
             ),
             itemBuilder: (context, index) {
               final asset = mediaList[index];
               return GestureDetector(
                 onTap: () => _toggleSelection(asset),
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    _buildImage(asset),
-                    ValueListenableBuilder<List<AssetEntity>>(
-                      valueListenable: selectedAssets,
-                      builder: (_, selected, __) {
-                        final isSelected = selected.contains(asset);
-                        return Positioned(
-                          top: 8,
-                          right: 8,
-                          child: Container(
-                            padding: const EdgeInsets.all(5),
-                            decoration: BoxDecoration(
-                              color:
-                                  isSelected
-                                      ? AppColors.primary
-                                      : Colors.black45,
-                              shape: BoxShape.circle,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade200,
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black12,
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
                             ),
-                            child: Icon(
-                              isSelected ? Icons.check : Icons.circle_outlined,
-                              color: Colors.white,
-                              size: 16,
+                          ],
+                        ),
+                        child: _buildImage(asset),
+                      ),
+                      ValueListenableBuilder<List<AssetEntity>>(
+                        valueListenable: selectedAssets,
+                        builder: (_, selected, __) {
+                          final isSelected = selected.contains(asset);
+                          return Positioned(
+                            top: 6,
+                            right: 6,
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 300),
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                color:
+                                    isSelected
+                                        ? AppColors.primary
+                                        : Colors.white.withOpacity(0.7),
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: AppColors.primary,
+                                  width: 1.2,
+                                ),
+                              ),
+                              child: Icon(
+                                isSelected
+                                    ? Icons.check
+                                    : Icons.radio_button_unchecked,
+                                color:
+                                    isSelected
+                                        ? Colors.white
+                                        : AppColors.primary,
+                                size: 18,
+                              ),
                             ),
-                          ),
-                        );
-                      },
-                    ),
-                  ],
+                          );
+                        },
+                      ),
+                    ],
+                  ),
                 ),
               );
             },
@@ -176,30 +214,39 @@ class _GalleryPickerScreenState extends State<GalleryPickerScreen> {
       floatingActionButton: ValueListenableBuilder<List<AssetEntity>>(
         valueListenable: selectedAssets,
         builder: (context, selected, child) {
-          return ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(50),
+          return AnimatedOpacity(
+            opacity: selected.isNotEmpty ? 1.0 : 0.6,
+            duration: const Duration(milliseconds: 300),
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 36,
+                  vertical: 16,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(50),
+                ),
+                elevation: 6,
               ),
-            ),
-            onPressed: () {
-              if (selected.isNotEmpty) {
-                widget.onSelectionDone(selected);
-              } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text("Please select at least 1 image"),
-                  ),
-                );
-              }
-            },
-            child: const Text(
-              "Done",
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w600,
+              onPressed: () {
+                if (selected.isNotEmpty) {
+                  widget.onSelectionDone(selected);
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("Please select at least 1 image"),
+                    ),
+                  );
+                }
+              },
+              child: const Text(
+                "Done",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 16,
+                ),
               ),
             ),
           );
