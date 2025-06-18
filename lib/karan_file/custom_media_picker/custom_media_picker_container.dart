@@ -40,7 +40,8 @@ class CustomMediaPickerContainer extends StatefulWidget {
       _CustomMediaPickerContainerState();
 }
 
-class _CustomMediaPickerContainerState extends State<CustomMediaPickerContainer> {
+class _CustomMediaPickerContainerState
+    extends State<CustomMediaPickerContainer> {
   List<File> _pickedImages = [];
   File? pickedFile;
 
@@ -84,7 +85,7 @@ class _CustomMediaPickerContainerState extends State<CustomMediaPickerContainer>
               _pickedImages.length < widget.multipleImage
                   ? _pickedImages.length + 1
                   : _pickedImages.length,
-                  (index) {
+              (index) {
                 if (_pickedImages.length < widget.multipleImage &&
                     index == _pickedImages.length) {
                   return GestureDetector(
@@ -150,14 +151,18 @@ class _CustomMediaPickerContainerState extends State<CustomMediaPickerContainer>
           decoration: BoxDecoration(borderRadius: BorderRadius.circular(12)),
           child: Row(
             children: [
-              const Icon(Icons.insert_drive_file, color: AppColors.primary, size: 40),
+              const Icon(
+                Icons.insert_drive_file,
+                color: AppColors.primary,
+                size: 40,
+              ),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
                   path.basename(pickedFile!.path),
                   style: TextStyle(
                     fontSize:
-                    AppTheme.lightTheme.textTheme.bodyLarge?.fontSize ?? 16,
+                        AppTheme.lightTheme.textTheme.bodyLarge?.fontSize ?? 16,
                     fontFamily: "Gilroy-Medium",
                     color: AppColors.titleColor,
                   ),
@@ -166,7 +171,10 @@ class _CustomMediaPickerContainerState extends State<CustomMediaPickerContainer>
               GestureDetector(
                 onTap: () => setState(() => pickedFile = null),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 6),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 2,
+                    horizontal: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.removeBackground,
                     border: Border.all(color: AppColors.remove),
@@ -175,7 +183,9 @@ class _CustomMediaPickerContainerState extends State<CustomMediaPickerContainer>
                   child: Text(
                     "Remove",
                     style: TextStyle(
-                      fontSize: AppTheme.lightTheme.textTheme.bodyLarge?.fontSize ?? 14,
+                      fontSize:
+                          AppTheme.lightTheme.textTheme.bodyLarge?.fontSize ??
+                          14,
                       color: AppColors.error,
                     ),
                   ),
@@ -211,7 +221,7 @@ class _CustomMediaPickerContainerState extends State<CustomMediaPickerContainer>
                   widget.imageTitle,
                   style: TextStyle(
                     fontSize:
-                    AppTheme.lightTheme.textTheme.bodyLarge?.fontSize ?? 16,
+                        AppTheme.lightTheme.textTheme.bodyLarge?.fontSize ?? 16,
                     fontFamily: "Gilroy-SemiBold",
                     fontWeight: FontWeight.w400,
                     color: AppColors.titleColor,
@@ -228,28 +238,45 @@ class _CustomMediaPickerContainerState extends State<CustomMediaPickerContainer>
   void openMediaPicker(BuildContext context) async {
     List<File>? selectedFiles = [];
 
-    if (widget.isGallaryShow && !widget.isCameraShow && !widget.isDocumentShow) {
+    final remainingCount = widget.multipleImage - _pickedImages.length;
+    print('remainingCount:-----------------------------$remainingCount');
+    if (remainingCount <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'You have already selected the maximum number of images.',
+          ),
+        ),
+      );
+      return;
+    }
+
+    if (widget.isGallaryShow &&
+        !widget.isCameraShow &&
+        !widget.isDocumentShow) {
       selectedFiles = await Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => GalleryPickerScreen(
-            maxSelection: widget.multipleImage,
-            onSelectionDone: (List<AssetEntity> assets) async {
-              List<File> files = [];
-              for (final asset in assets) {
-                final file = await asset.file;
-                if (file != null) {
-                  files.add(file);
-                }
-              }
-              Navigator.pop(context, files);
-            },
-          ),
+          builder:
+              (context) => GalleryPickerScreen(
+                maxSelection: remainingCount,
+                onSelectionDone: (List<AssetEntity> assets) async {
+                  List<File> files = [];
+                  for (final asset in assets) {
+                    final file = await asset.file;
+                    if (file != null) {
+                      files.add(file);
+                    }
+                  }
+                  Navigator.pop(context, files);
+                },
+              ),
         ),
       );
     } else {
       selectedFiles = await showMediaFilePicker(
         context: context,
+        maxCount: remainingCount,
         isCameraShow: widget.isCameraShow,
         isGallaryShow: widget.isGallaryShow,
         isDocumentShow: widget.isDocumentShow,
@@ -282,10 +309,11 @@ class _CustomMediaPickerContainerState extends State<CustomMediaPickerContainer>
             pickedFile = null;
           });
         } else {
+          final remaining = widget.multipleImage - _pickedImages.length;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
-                'You can only select up to ${widget.multipleImage} images.',
+                'You can only select $remaining more image${remaining > 1 ? "s" : ""}.',
               ),
             ),
           );

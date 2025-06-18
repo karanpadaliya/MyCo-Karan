@@ -28,10 +28,23 @@ class _GalleryPickerScreenState extends State<GalleryPickerScreen> {
   List<AssetPathEntity> albums = [];
   List<AssetEntity> mediaList = [];
 
+  int _currentMaxSelection = 0;
+
   @override
   void initState() {
     super.initState();
+    _currentMaxSelection = widget.maxSelection;
     _loadGallery(context);
+  }
+
+  @override
+  void didUpdateWidget(covariant GalleryPickerScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.maxSelection != widget.maxSelection) {
+      setState(() {
+        _currentMaxSelection = widget.maxSelection;
+      });
+    }
   }
 
   Future<void> _loadGallery(BuildContext context) async {
@@ -64,8 +77,16 @@ class _GalleryPickerScreenState extends State<GalleryPickerScreen> {
     if (currentList.contains(asset)) {
       selectedAssets.value = List.from(currentList)..remove(asset);
     } else {
-      if (currentList.length < widget.maxSelection) {
+      if (currentList.length < _currentMaxSelection) {
         selectedAssets.value = List.from(currentList)..add(asset);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              "You can only select up to $_currentMaxSelection images",
+            ),
+          ),
+        );
       }
     }
   }
@@ -86,7 +107,6 @@ class _GalleryPickerScreenState extends State<GalleryPickerScreen> {
             ),
           );
         } else {
-          // Shimmer loading effect
           return ClipRRect(
             borderRadius: BorderRadius.circular(12),
             child: Shimmer.fromColors(
@@ -123,7 +143,7 @@ class _GalleryPickerScreenState extends State<GalleryPickerScreen> {
           valueListenable: selectedAssets,
           builder: (_, selected, __) {
             return Text(
-              'Selected: ${selected.length}/${widget.maxSelection}',
+              'Selected: ${selected.length}/$_currentMaxSelection',
               style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 18),
             );
           },
@@ -179,25 +199,23 @@ class _GalleryPickerScreenState extends State<GalleryPickerScreen> {
                               duration: const Duration(milliseconds: 300),
                               padding: const EdgeInsets.all(6),
                               decoration: BoxDecoration(
-                                color:
-                                    isSelected
-                                        ? AppColors.primary
-                                        : Colors.white.withOpacity(0.7),
+                                color: isSelected
+                                    ? AppColors.primary
+                                    : Colors.white.withOpacity(0.7),
                                 shape: BoxShape.circle,
                                 border: Border.all(
                                   color: AppColors.primary,
-                                  width: 1.2,
+                                  width: 1,
                                 ),
                               ),
                               child: Icon(
                                 isSelected
                                     ? Icons.check
                                     : Icons.radio_button_unchecked,
-                                color:
-                                    isSelected
-                                        ? Colors.white
-                                        : AppColors.primary,
-                                size: 18,
+                                color: isSelected
+                                    ? Colors.white
+                                    : AppColors.primary,
+                                size: 14,
                               ),
                             ),
                           );

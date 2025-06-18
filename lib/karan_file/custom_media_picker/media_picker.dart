@@ -274,8 +274,8 @@ class _MediaFilePickerWidgetState extends State<_MediaFilePickerWidget> {
                 }
 
                 if (files.isNotEmpty && mounted) {
-                  Navigator.pop(context); // Close GalleryPickerScreen
-                  Navigator.pop(context, files); // Return selected files
+                  Navigator.pop(context);
+                  Navigator.pop(context, files);
                 } else if (mounted) {
                   Navigator.pop(context);
                 }
