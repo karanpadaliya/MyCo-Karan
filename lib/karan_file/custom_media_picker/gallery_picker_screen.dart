@@ -8,16 +8,19 @@ import '../../themes_colors/colors.dart';
 import '../app_permissions/app_permissions.dart';
 import '../custom_loader/custom_loader.dart';
 import '../custom_myco_button/custom_myco_button.dart';
+import 'custom_crop_images.dart';
 
 class GalleryPickerScreen extends StatefulWidget {
   final int maxSelection;
-  final Function(List<AssetEntity>) onSelectionDone;
+  final Function(List<dynamic>) onSelectionDone;
+  final bool isCropImage;
 
   const GalleryPickerScreen({
-    Key? key,
+    super.key,
     required this.maxSelection,
     required this.onSelectionDone,
-  }) : super(key: key);
+    this.isCropImage = false,
+  });
 
   @override
   State<GalleryPickerScreen> createState() => _GalleryPickerScreenState();
@@ -102,7 +105,6 @@ class _GalleryPickerScreenState extends State<GalleryPickerScreen> {
       }
     }
 
-    // Assuming validateAndHandleImages returns a Map with 'validFiles' and 'invalidFiles'
     final validationResult = await validateAndHandleImages(
       context: context,
       files: allFiles,
@@ -112,12 +114,41 @@ class _GalleryPickerScreenState extends State<GalleryPickerScreen> {
     final List<Map<String, dynamic>> invalidFilesWithReasons =
         validationResult['invalidFiles'] as List<Map<String, dynamic>>;
 
-    final validAssets = validFiles.map((f) => fileToAsset[f]!).toList();
+    final validAssets =
+        validFiles.map((f) => fileToAsset[f]).whereType<AssetEntity>().toList();
+
+    void handleValidAssets() async {
+      final safeContext = context;
+
+      if (widget.isCropImage) {
+        final croppedFiles = await Navigator.push<List<File>>(
+          safeContext,
+          MaterialPageRoute(
+            builder:
+                (_) => CustomCropImageScreen(
+                  assets: validAssets,
+                  onCropped: (croppedFiles) {
+                    // This pops the cropped files back to the previous screen
+                    Navigator.pop(safeContext, croppedFiles);
+                  },
+                ),
+          ),
+        );
+
+        // IMPORTANT: Check if croppedFiles is not null and then use it.
+        if (safeContext.mounted && croppedFiles != null) {
+          widget.onSelectionDone(croppedFiles);
+        } else if (safeContext.mounted && croppedFiles == null) {}
+      } else {
+        // Original logic for when cropping is not enabled
+        widget.onSelectionDone(validAssets);
+      }
+    }
 
     if (invalidFilesWithReasons.isNotEmpty && validAssets.isNotEmpty) {
       _showInvalidFilesBottomSheet(invalidFilesWithReasons, validAssets);
     } else if (validAssets.isNotEmpty) {
-      widget.onSelectionDone(validAssets);
+      handleValidAssets();
     } else {
       _showInvalidFilesBottomSheet(invalidFilesWithReasons, validAssets);
     }
@@ -127,11 +158,47 @@ class _GalleryPickerScreenState extends State<GalleryPickerScreen> {
     List<Map<String, dynamic>> invalidFiles,
     List<AssetEntity> validAssets,
   ) {
-    // Calling the new static bottom sheet directly
+    if (!mounted) return;
+
+    final safeContext = context;
+
     _GalleryPickerBottomSheet.showInvalidFilesBottomSheet(
-      context,
+      safeContext,
       invalidFiles,
-      () => widget.onSelectionDone(validAssets),
+      () {
+        if (!safeContext.mounted) return;
+
+        Navigator.pop(safeContext);
+
+        if (validAssets.isNotEmpty) {
+          if (widget.isCropImage) {
+            Navigator.push(
+              safeContext,
+              MaterialPageRoute(
+                builder:
+                    (_) => CustomCropImageScreen(
+                      assets: validAssets,
+                      onCropped: (croppedFiles) {
+                        if (safeContext.mounted) {
+                          Navigator.pop(safeContext, croppedFiles);
+                        }
+                      },
+                    ),
+              ),
+            ).then((croppedFilesFromCropScreen) {
+              // Use .then() to handle result
+              if (safeContext.mounted && croppedFilesFromCropScreen != null) {
+                widget.onSelectionDone(
+                  croppedFilesFromCropScreen,
+                ); // Pass List<File>
+              }
+            });
+          } else {
+            widget.onSelectionDone(validAssets); // Pass List<AssetEntity>
+          }
+        }
+        ;
+      },
     );
   }
 

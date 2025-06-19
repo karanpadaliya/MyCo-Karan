@@ -257,19 +257,21 @@ class _CustomMediaPickerContainerState
       selectedFiles = await Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => GalleryPickerScreen(
-            maxSelection: remainingCount,
-            onSelectionDone: (List<AssetEntity> assets) async {
-              List<File> files = [];
-              for (final asset in assets) {
-                final file = await asset.file;
-                if (file != null) {
-                  files.add(file);
-                }
-              }
-              Navigator.pop(context, files);
-            },
-          ),
+          builder:
+              (context) => GalleryPickerScreen(
+                maxSelection: remainingCount,
+                // isCropImage: false,
+                onSelectionDone: (List<dynamic> assets) async {
+                  List<File> files = [];
+                  for (final asset in assets) {
+                    final file = await asset.file;
+                    if (file != null) {
+                      files.add(file);
+                    }
+                  }
+                  Navigator.pop(context, files);
+                },
+              ),
         ),
       );
     } else {
@@ -279,6 +281,7 @@ class _CustomMediaPickerContainerState
         isCameraShow: widget.isCameraShow,
         isGallaryShow: widget.isGallaryShow,
         isDocumentShow: widget.isDocumentShow,
+        isCropImage: false,
       );
     }
 

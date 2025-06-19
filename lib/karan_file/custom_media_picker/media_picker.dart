@@ -2,8 +2,8 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:path/path.dart' as path;
 import 'package:photo_manager/photo_manager.dart';
+
 import '../../themes_colors/app_theme.dart';
 import '../../themes_colors/colors.dart';
 import '../app_permissions/app_permissions.dart';
@@ -19,6 +19,7 @@ Future<List<File>?> showMediaFilePicker({
   bool isGallaryShow = false,
   bool isDocumentShow = false,
   int maxCount = 5,
+  bool isCropImage = false,
 }) async {
   bool _isLoading = false;
 
@@ -39,6 +40,7 @@ Future<List<File>?> showMediaFilePicker({
                         isDocumentShow: isDocumentShow,
                         onLoading: (val) => setState(() => _isLoading = val),
                         maxCount: maxCount,
+                        isCropImage: isCropImage,
                       ),
                     ),
                     if (_isLoading) const Center(child: CustomLoader()),
@@ -57,6 +59,7 @@ Future<List<File>?> showMediaFilePicker({
             isGallaryShow: isGallaryShow,
             isDocumentShow: isDocumentShow,
             maxCount: maxCount,
+            isCropImage: isCropImage,
           );
         },
       );
@@ -67,6 +70,7 @@ class _AnimatedBottomSheet extends StatefulWidget {
   final bool isGallaryShow;
   final bool isDocumentShow;
   final int maxCount;
+  final bool isCropImage;
 
   const _AnimatedBottomSheet({
     Key? key,
@@ -74,6 +78,7 @@ class _AnimatedBottomSheet extends StatefulWidget {
     required this.isGallaryShow,
     required this.isDocumentShow,
     required this.maxCount,
+    required this.isCropImage,
   }) : super(key: key);
 
   @override
@@ -136,6 +141,7 @@ class _AnimatedBottomSheetState extends State<_AnimatedBottomSheet>
                   isDocumentShow: widget.isDocumentShow,
                   onLoading: _setLoading,
                   maxCount: widget.maxCount,
+                  isCropImage: widget.isCropImage,
                 ),
               ),
             ),
@@ -156,6 +162,7 @@ class _MediaFilePickerWidget extends StatefulWidget {
   final bool isGallaryShow;
   final bool isDocumentShow;
   final int maxCount;
+  final bool isCropImage;
   final void Function(bool)? onLoading;
 
   const _MediaFilePickerWidget({
@@ -165,6 +172,7 @@ class _MediaFilePickerWidget extends StatefulWidget {
     this.isDocumentShow = false,
     this.onLoading,
     this.maxCount = 5,
+    this.isCropImage = false,
   }) : super(key: key);
 
   @override
@@ -254,13 +262,17 @@ class _MediaFilePickerWidgetState extends State<_MediaFilePickerWidget> {
       widget.onLoading?.call(true);
 
       if (source == ImageSource.gallery) {
+        print(
+          'widget.isCropImage:----------------------------------${widget.isCropImage}',
+        );
         await Navigator.push(
           context,
           MaterialPageRoute(
             builder:
                 (context) => GalleryPickerScreen(
                   maxSelection: widget.maxCount,
-                  onSelectionDone: (List<AssetEntity> assets) async {
+                  isCropImage: widget.isCropImage,
+                  onSelectionDone: (List<dynamic> assets) async {
                     List<File> files = [];
 
                     for (final asset in assets) {
