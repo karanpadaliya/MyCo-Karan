@@ -2,8 +2,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as path;
 
-/// A utility function to validate image files and show a bottom sheet if needed.
-/// Returns the list of valid files.
 
 Future<List<File>> validateAndHandleImages({
   required BuildContext context,

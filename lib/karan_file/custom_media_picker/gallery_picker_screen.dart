@@ -7,6 +7,7 @@ import 'package:path/path.dart' as path;
 
 import '../../themes_colors/colors.dart';
 import '../app_permissions/app_permissions.dart';
+import '../componants/app_snackbar.dart';
 import '../custom_loader/custom_loader.dart';
 import '../custom_myco_button/custom_myco_button.dart';
 import 'image_file_validator.dart';
@@ -83,13 +84,11 @@ class _GalleryPickerScreenState extends State<GalleryPickerScreen> {
       if (currentList.length < _currentMaxSelection) {
         selectedAssets.value = List.from(currentList)..add(asset);
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              "You can only select up to $_currentMaxSelection images",
-            ),
-          ),
-        );
+        //   AppSnackbar.showError(
+        //     context,
+        //     "You can only select up to $_currentMaxSelection images",
+        //     top: true
+        //   );
       }
     }
   }
@@ -139,9 +138,17 @@ class _GalleryPickerScreenState extends State<GalleryPickerScreen> {
     );
   }
 
+  final Map<AssetEntity, Future<Uint8List?>> _thumbnailCache = {};
+
   Widget _buildImage(AssetEntity asset) {
+    // Cache the future
+    _thumbnailCache.putIfAbsent(
+      asset,
+      () => asset.thumbnailDataWithSize(const ThumbnailSize(300, 300)),
+    );
+
     return FutureBuilder<Uint8List?>(
-      future: asset.thumbnailDataWithSize(const ThumbnailSize(300, 300)),
+      future: _thumbnailCache[asset],
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.done &&
             snapshot.hasData) {
@@ -172,10 +179,15 @@ class _GalleryPickerScreenState extends State<GalleryPickerScreen> {
     );
   }
 
+  void _clearThumbnailsCache() {
+    _thumbnailCache.clear();
+  }
+
   @override
   void dispose() {
     selectedAssets.dispose();
     _isLoading.dispose();
+    _clearThumbnailsCache();
     super.dispose();
   }
 
@@ -301,11 +313,10 @@ class _GalleryPickerScreenState extends State<GalleryPickerScreen> {
                 if (selected.isNotEmpty) {
                   _validateAndSubmitSelection(selected);
                 } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text("Please select at least 1 image"),
-                    ),
-                  );
+                  // AppSnackbar.showError(
+                  //   context,
+                  //   "Please select at least 1 image",
+                  // );
                 }
               },
               child: const Text(
@@ -337,122 +348,138 @@ class _GalleryPickerBottomSheet {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (_) {
-        return Padding(
+      backgroundColor: Colors.transparent,
+      // make background transparent for animation
+      builder: (context) {
+        return AnimatedPadding(
           padding: MediaQuery.of(context).viewInsets,
-          child: DraggableScrollableSheet(
-            initialChildSize: 0.5,
-            minChildSize: 0.4,
-            maxChildSize: 0.85,
-            expand: false,
-            builder: (_, controller) {
-              return Padding(
-                padding: const EdgeInsets.all(15.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'File(s) Restriction',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.primary,
-                      ),
-                      textAlign: TextAlign.start,
-                    ),
-                    const SizedBox(height: 15),
-                    const Text(
-                      'Some files were discarded because they are either WebP format or larger than 5MB. Please select files under 5MB in supported formats.',
-                      style: TextStyle(
-                        color: Colors.red,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                      ),
-                      textAlign: TextAlign.start,
-                    ),
-                    const SizedBox(height: 20),
-                    SingleChildScrollView(
-                      controller: controller,
-                      child: Wrap(
-                        spacing: 12,
-                        runSpacing: 12,
-                        children:
-                            invalidFiles.map((item) {
-                              final File file = item['file'];
-                              final String reason = item['reason'];
-                              final String reasonLabel =
-                                  reason == 'format'
-                                      ? 'due to .webp'
-                                      : 'due to size';
-
-                              return Container(
-                                width: 100,
-                                decoration: BoxDecoration(
-                                  border: Border.all(
-                                    color: AppColors.borderColor,
-                                    width: 2,
-                                  ),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                padding: const EdgeInsets.all(6),
-                                child: Column(
-                                  children: [
-                                    ClipRRect(
-                                      borderRadius: BorderRadius.circular(8),
-                                      child: Image.file(
-                                        file,
-                                        width: 88,
-                                        height: 88,
-                                        fit: BoxFit.cover,
-                                        errorBuilder:
-                                            (_, __, ___) => const Icon(
-                                              Icons.broken_image,
-                                              size: 40,
-                                            ),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 6),
-                                    Text(
-                                      reasonLabel,
-                                      style: const TextStyle(
-                                        color: Colors.red,
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ],
-                                ),
-                              );
-                            }).toList(),
-                      ),
-                    ),
-                    Expanded(child: SizedBox()),
-                    SizedBox(
-                      height: 45,
-                      child: MyCoButton(
-                        onTap: () {
-                          Navigator.pop(context);
-                          onProceedWithValid();
-                        },
-                        title: 'Close',
-                        textStyle: TextStyle(
-                          fontSize: 16,
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+          child: Container(
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            child: DraggableScrollableSheet(
+              initialChildSize: 0.5,
+              minChildSize: 0.4,
+              maxChildSize: 0.85,
+              expand: false,
+              builder: (context, scrollController) {
+                return Padding(
+                  padding: const EdgeInsets.all(15.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Title
+                      Text(
+                        'File(s) Restriction',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.primary,
                         ),
-                        boarderRadius: 20,
-                        isShadowBottomLeft: true,
                       ),
-                    ),
-                  ],
-                ),
-              );
-            },
+                      const SizedBox(height: 15),
+
+                      // Description
+                      const Text(
+                        'Some files were discarded because they are either WebP format or larger than 5MB. Please select files under 5MB in supported formats.',
+                        style: TextStyle(
+                          color: Colors.red,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+
+                      // Scrollable Images
+                      Expanded(
+                        child: SingleChildScrollView(
+                          child: Wrap(
+                            spacing: 12,
+                            runSpacing: 12,
+                            children:
+                                invalidFiles.map((item) {
+                                  final File file = item['file'];
+                                  final String reason = item['reason'];
+                                  final String reasonLabel =
+                                      reason == 'format'
+                                          ? 'due to .webp'
+                                          : 'due to size';
+
+                                  return Container(
+                                    width: 100,
+                                    decoration: BoxDecoration(
+                                      border: Border.all(
+                                        color: AppColors.borderColor,
+                                        width: 1,
+                                      ),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    padding: const EdgeInsets.all(6),
+                                    child: Column(
+                                      children: [
+                                        ClipRRect(
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                          child: Image.file(
+                                            file,
+                                            width: 88,
+                                            height: 88,
+                                            fit: BoxFit.cover,
+                                            errorBuilder:
+                                                (_, __, ___) => const Icon(
+                                                  Icons.broken_image,
+                                                  size: 40,
+                                                ),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 6),
+                                        Text(
+                                          reasonLabel,
+                                          style: const TextStyle(
+                                            color: Colors.red,
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }).toList(),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      // Close Button
+                      SizedBox(
+                        height: 45,
+                        width: double.infinity,
+                        child: MyCoButton(
+                          onTap: () {
+                            Navigator.pop(context);
+                            onProceedWithValid();
+                          },
+                          title: 'Close',
+                          textStyle: const TextStyle(
+                            fontSize: 16,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          boarderRadius: 20,
+                          isShadowBottomLeft: true,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
           ),
         );
       },
