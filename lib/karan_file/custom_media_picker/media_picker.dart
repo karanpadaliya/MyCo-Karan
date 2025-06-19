@@ -11,7 +11,6 @@ import '../custom_loader/custom_loader.dart';
 import '../custom_myco_button/custom_myco_button.dart';
 import 'custome_shadow_container.dart';
 import 'gallery_picker_screen.dart';
-import 'image_file_validator.dart';
 
 Future<List<File>?> showMediaFilePicker({
   required BuildContext context,
@@ -62,8 +61,6 @@ Future<List<File>?> showMediaFilePicker({
         },
       );
 }
-
-// ==================== SLIDE-UP ANIMATION WRAPPER ====================
 
 class _AnimatedBottomSheet extends StatefulWidget {
   final bool isCameraShow;
@@ -153,8 +150,6 @@ class _AnimatedBottomSheetState extends State<_AnimatedBottomSheet>
     );
   }
 }
-
-// ==================== BOTTOM PICKER CONTENT ====================
 
 class _MediaFilePickerWidget extends StatefulWidget {
   final bool isCameraShow;
@@ -273,26 +268,9 @@ class _MediaFilePickerWidgetState extends State<_MediaFilePickerWidget> {
                       if (file != null) files.add(file);
                     }
 
-                    if (files.isEmpty || !mounted) {
-                      if (mounted) Navigator.pop(context);
-                      return;
-                    }
-
-                    // ✅ Validate files
-                    final result = await ImageFileValidator.validateFiles(
-                      files,
-                    );
-
-                    if (result.invalidFiles.isNotEmpty && mounted) {
-                      ImageFileValidator.showInvalidFilesBottomSheet(
-                        context,
-                        result.invalidFiles,
-                      );
-                    }
-
-                    if (result.validFiles.isNotEmpty && mounted) {
+                    if (files.isNotEmpty && mounted) {
                       Navigator.pop(context);
-                      Navigator.pop(context, result.validFiles);
+                      Navigator.pop(context, files);
                     } else if (mounted) {
                       Navigator.pop(context);
                     }
@@ -308,20 +286,9 @@ class _MediaFilePickerWidgetState extends State<_MediaFilePickerWidget> {
           imageQuality: 80,
         );
 
-        if (pickedFile != null) {
+        if (pickedFile != null && mounted) {
           final file = File(pickedFile.path);
-          final result = await ImageFileValidator.validateFiles([file]);
-
-          if (result.invalidFiles.isNotEmpty && mounted) {
-            ImageFileValidator.showInvalidFilesBottomSheet(
-              context,
-              result.invalidFiles,
-            );
-          }
-
-          if (result.validFiles.isNotEmpty && mounted) {
-            Navigator.pop(context, result.validFiles);
-          }
+          Navigator.pop(context, [file]);
         } else {
           if (mounted) Navigator.pop(context);
         }

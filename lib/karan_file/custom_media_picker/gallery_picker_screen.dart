@@ -4,13 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:path/path.dart' as path;
-
 import '../../themes_colors/colors.dart';
 import '../app_permissions/app_permissions.dart';
-import '../componants/app_snackbar.dart';
 import '../custom_loader/custom_loader.dart';
 import '../custom_myco_button/custom_myco_button.dart';
-import 'image_file_validator.dart';
 
 class GalleryPickerScreen extends StatefulWidget {
   final int maxSelection;
