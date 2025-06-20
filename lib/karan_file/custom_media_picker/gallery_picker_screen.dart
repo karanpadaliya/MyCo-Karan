@@ -131,7 +131,6 @@ class _GalleryPickerScreenState extends State<GalleryPickerScreen> {
     }
   }
 
-
   void _showInvalidFilesBottomSheet(
     List<Map<String, dynamic>> invalidFiles,
     List<AssetEntity> validAssets,
@@ -379,7 +378,6 @@ class _GalleryPickerBottomSheet {
                       const SizedBox(height: 20),
                       Expanded(
                         child: SingleChildScrollView(
-                          controller: scrollController,
                           child: Wrap(
                             spacing: 12,
                             runSpacing: 12,
