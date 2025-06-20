@@ -144,7 +144,7 @@ class _MyCoButtonMobile extends StatelessWidget {
         children: [
           Container(
             height: height ?? 0.04 * getHeight(context),
-            width: width ?? 0.94 * getWidth(context),
+            width: width ?? null,
             decoration:
                 decoration ??
                 BoxDecoration(

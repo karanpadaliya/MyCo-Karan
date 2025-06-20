@@ -20,7 +20,7 @@ import '../maulik_file/wfh_box.dart';
 import '../maulik_file/work_report_add_box.dart';
 import '../maulik_file/work_report_history_box.dart';
 import '../themes_colors/colors.dart';
-import '../tirth_file/custom_calendar.dart';
+import '../tirth_file/custom_calender.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -37,10 +37,15 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
+      appBar: AppBar(
+        backgroundColor: AppColors.primary,
+        foregroundColor: AppColors.white,
+        title: Text('Custom Widget'),
+      ),
       body: Center(
         child: SingleChildScrollView(
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
               const SizedBox(height: 40),
               CustomTimer(
@@ -116,23 +121,47 @@ class _HomePageState extends State<HomePage> {
               // ),
               // const SizedBox(height: 50),
               //
-              // MyCoButton(
-              //   title: "Media Picker",
-              //   boarderRadius: 50,
-              //   isShadowBottomLeft: true,
-              //   isShadowBottomRight: true,
-              //   textStyle: TextStyle(color: AppColors.white),
-              //   onTap: () {
-              //     showMediaFilePicker(
-              //       context: context,
-              //       isDialog: true,
-              //       maxCount: 5,
-              //       isCameraShow: true,
-              //       isDocumentShow: true,
-              //       isGallaryShow: true,
-              //     );
-              //   },
-              // ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  MyCoButton(
+                    width: 200,
+                    title: "Media Picker",
+                    boarderRadius: 50,
+                    isShadowBottomLeft: true,
+                    isShadowBottomRight: true,
+                    textStyle: TextStyle(color: AppColors.white),
+                    onTap: () {
+                      showMediaFilePicker(
+                        context: context,
+                        isDialog: true,
+                        maxCount: 5,
+                        isCameraShow: true,
+                        isDocumentShow: true,
+                        isGallaryShow: true,
+                      );
+                    },
+                  ),
+                  MyCoButton(
+                    width: 150,
+                    title: "Media Picker",
+                    boarderRadius: 50,
+                    isShadowBottomLeft: true,
+                    isShadowBottomRight: true,
+                    textStyle: TextStyle(color: AppColors.white),
+                    onTap: () {
+                      showMediaFilePicker(
+                        context: context,
+                        isDialog: true,
+                        maxCount: 5,
+                        isCameraShow: true,
+                        isDocumentShow: true,
+                        isGallaryShow: true,
+                      );
+                    },
+                  ),
+                ],
+              ),
               // const SizedBox(height: 50),
               // MyCoButton(
               //   title: "Travel mode Bottom Sheet",
