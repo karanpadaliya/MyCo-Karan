@@ -275,16 +275,21 @@ class _MediaFilePickerWidgetState extends State<_MediaFilePickerWidget> {
                   onSelectionDone: (List<dynamic> assets) async {
                     List<File> files = [];
 
-                    for (final asset in assets) {
-                      final file = await asset.file;
-                      if (file != null) files.add(file);
+                    // If cropping was enabled, assets will already be List<File>
+                    if (assets.isNotEmpty && assets.first is File) {
+                      files = assets.cast<File>();
+                    }
+                    // If cropping wasn't enabled, assets will be List<AssetEntity>
+                    else if (assets.isNotEmpty && assets.first is AssetEntity) {
+                      for (final asset in assets.cast<AssetEntity>()) {
+                        final file = await asset.file;
+                        if (file != null) files.add(file);
+                      }
                     }
 
-                    if (files.isNotEmpty && mounted) {
-                      Navigator.pop(context);
-                      Navigator.pop(context, files);
-                    } else if (mounted) {
-                      Navigator.pop(context);
+                    if (mounted) {
+                      Navigator.pop(context); // Close GalleryPickerScreen
+                      Navigator.pop(context, files); // Send selected files back
                     }
                   },
                 ),

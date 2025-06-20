@@ -281,7 +281,7 @@ class _CustomMediaPickerContainerState
         isCameraShow: widget.isCameraShow,
         isGallaryShow: widget.isGallaryShow,
         isDocumentShow: widget.isDocumentShow,
-        isCropImage: false,
+        isCropImage: true,
       );
     }
 

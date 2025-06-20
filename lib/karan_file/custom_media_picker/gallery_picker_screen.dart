@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:path/path.dart' as path;
+
 import '../../themes_colors/colors.dart';
 import '../app_permissions/app_permissions.dart';
 import '../custom_loader/custom_loader.dart';
@@ -32,6 +33,7 @@ class _GalleryPickerScreenState extends State<GalleryPickerScreen> {
 
   List<AssetPathEntity> albums = [];
   List<AssetEntity> mediaList = [];
+  final Map<AssetEntity, Future<Uint8List?>> _thumbnailCache = {};
   int _currentMaxSelection = 0;
 
   @override
@@ -41,23 +43,12 @@ class _GalleryPickerScreenState extends State<GalleryPickerScreen> {
     _loadGallery(context);
   }
 
-  @override
-  void didUpdateWidget(covariant GalleryPickerScreen oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.maxSelection != widget.maxSelection) {
-      setState(() {
-        _currentMaxSelection = widget.maxSelection;
-      });
-    }
-  }
-
   Future<void> _loadGallery(BuildContext context) async {
     _isLoading.value = true;
     bool hasPermission = await PermissionUtil.checkPermissionByPickerType(
       'gallery',
       context,
     );
-
     if (!hasPermission) {
       _isLoading.value = false;
       return;
@@ -83,12 +74,6 @@ class _GalleryPickerScreenState extends State<GalleryPickerScreen> {
     } else {
       if (currentList.length < _currentMaxSelection) {
         selectedAssets.value = List.from(currentList)..add(asset);
-      } else {
-        //   AppSnackbar.showError(
-        //     context,
-        //     "You can only select up to $_currentMaxSelection images",
-        //     top: true
-        //   );
       }
     }
   }
@@ -110,49 +95,42 @@ class _GalleryPickerScreenState extends State<GalleryPickerScreen> {
       files: allFiles,
     );
 
-    final List<File> validFiles = validationResult['validFiles'] as List<File>;
-    final List<Map<String, dynamic>> invalidFilesWithReasons =
+    final validFiles = validationResult['validFiles'] as List<File>;
+    final invalidFiles =
         validationResult['invalidFiles'] as List<Map<String, dynamic>>;
 
     final validAssets =
         validFiles.map((f) => fileToAsset[f]).whereType<AssetEntity>().toList();
 
-    void handleValidAssets() async {
-      final safeContext = context;
-
-      if (widget.isCropImage) {
-        final croppedFiles = await Navigator.push<List<File>>(
-          safeContext,
-          MaterialPageRoute(
-            builder:
-                (_) => CustomCropImageScreen(
-                  assets: validAssets,
-                  onCropped: (croppedFiles) {
-                    // This pops the cropped files back to the previous screen
-                    Navigator.pop(safeContext, croppedFiles);
-                  },
-                ),
-          ),
-        );
-
-        // IMPORTANT: Check if croppedFiles is not null and then use it.
-        if (safeContext.mounted && croppedFiles != null) {
-          widget.onSelectionDone(croppedFiles);
-        } else if (safeContext.mounted && croppedFiles == null) {}
-      } else {
-        // Original logic for when cropping is not enabled
-        widget.onSelectionDone(validAssets);
-      }
-    }
-
-    if (invalidFilesWithReasons.isNotEmpty && validAssets.isNotEmpty) {
-      _showInvalidFilesBottomSheet(invalidFilesWithReasons, validAssets);
+    if (invalidFiles.isNotEmpty && validAssets.isNotEmpty) {
+      _showInvalidFilesBottomSheet(invalidFiles, validAssets);
     } else if (validAssets.isNotEmpty) {
-      handleValidAssets();
+      _handleValidAssets(validAssets);
     } else {
-      _showInvalidFilesBottomSheet(invalidFilesWithReasons, validAssets);
+      _showInvalidFilesBottomSheet(invalidFiles, []);
     }
   }
+
+  void _handleValidAssets(List<AssetEntity> validAssets) async {
+    if (widget.isCropImage) {
+      final croppedFiles = await Navigator.push<List<File>>(
+        context,
+        MaterialPageRoute(
+          builder: (_) => CustomCropImageScreen(assets: validAssets),
+        ),
+      );
+
+      if (croppedFiles != null && croppedFiles.isNotEmpty) {
+        // Don't try to access .file on File objects
+        widget.onSelectionDone(croppedFiles);
+      } else {
+        debugPrint('CroppedFiles are null or empty');
+      }
+    } else {
+      widget.onSelectionDone(validAssets); // Pass AssetEntity list directly
+    }
+  }
+
 
   void _showInvalidFilesBottomSheet(
     List<Map<String, dynamic>> invalidFiles,
@@ -160,52 +138,18 @@ class _GalleryPickerScreenState extends State<GalleryPickerScreen> {
   ) {
     if (!mounted) return;
 
-    final safeContext = context;
-
     _GalleryPickerBottomSheet.showInvalidFilesBottomSheet(
-      safeContext,
+      context,
       invalidFiles,
       () {
-        if (!safeContext.mounted) return;
-
-        Navigator.pop(safeContext);
-
         if (validAssets.isNotEmpty) {
-          if (widget.isCropImage) {
-            Navigator.push(
-              safeContext,
-              MaterialPageRoute(
-                builder:
-                    (_) => CustomCropImageScreen(
-                      assets: validAssets,
-                      onCropped: (croppedFiles) {
-                        if (safeContext.mounted) {
-                          Navigator.pop(safeContext, croppedFiles);
-                        }
-                      },
-                    ),
-              ),
-            ).then((croppedFilesFromCropScreen) {
-              // Use .then() to handle result
-              if (safeContext.mounted && croppedFilesFromCropScreen != null) {
-                widget.onSelectionDone(
-                  croppedFilesFromCropScreen,
-                ); // Pass List<File>
-              }
-            });
-          } else {
-            widget.onSelectionDone(validAssets); // Pass List<AssetEntity>
-          }
+          _handleValidAssets(validAssets);
         }
-        ;
       },
     );
   }
 
-  final Map<AssetEntity, Future<Uint8List?>> _thumbnailCache = {};
-
   Widget _buildImage(AssetEntity asset) {
-    // Cache the future
     _thumbnailCache.putIfAbsent(
       asset,
       () => asset.thumbnailDataWithSize(const ThumbnailSize(300, 300)),
@@ -243,15 +187,11 @@ class _GalleryPickerScreenState extends State<GalleryPickerScreen> {
     );
   }
 
-  void _clearThumbnailsCache() {
-    _thumbnailCache.clear();
-  }
-
   @override
   void dispose() {
     selectedAssets.dispose();
     _isLoading.dispose();
-    _clearThumbnailsCache();
+    _thumbnailCache.clear();
     super.dispose();
   }
 
@@ -272,14 +212,11 @@ class _GalleryPickerScreenState extends State<GalleryPickerScreen> {
             );
           },
         ),
-        iconTheme: const IconThemeData(color: AppColors.white),
       ),
       body: ValueListenableBuilder<bool>(
         valueListenable: _isLoading,
-        builder: (context, isLoading, child) {
-          if (isLoading) {
-            return const Center(child: CustomLoader());
-          }
+        builder: (context, isLoading, _) {
+          if (isLoading) return const Center(child: CustomLoader());
           return GridView.builder(
             padding: const EdgeInsets.all(10),
             itemCount: mediaList.length,
@@ -293,62 +230,57 @@ class _GalleryPickerScreenState extends State<GalleryPickerScreen> {
               final asset = mediaList[index];
               return GestureDetector(
                 onTap: () => _toggleSelection(asset),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade200,
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black12,
-                              blurRadius: 4,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: _buildImage(asset),
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        color: Colors.grey.shade200,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black12,
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
-                      ValueListenableBuilder<List<AssetEntity>>(
-                        valueListenable: selectedAssets,
-                        builder: (_, selected, __) {
-                          final isSelected = selected.contains(asset);
-                          return Positioned(
-                            top: 6,
-                            right: 6,
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 300),
-                              padding: const EdgeInsets.all(6),
-                              decoration: BoxDecoration(
-                                color:
-                                    isSelected
-                                        ? AppColors.primary
-                                        : Colors.white.withOpacity(0.7),
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: AppColors.primary,
-                                  width: 1,
-                                ),
-                              ),
-                              child: Icon(
-                                isSelected
-                                    ? Icons.check
-                                    : Icons.radio_button_unchecked,
-                                color:
-                                    isSelected
-                                        ? Colors.white
-                                        : AppColors.primary,
-                                size: 14,
+                      child: _buildImage(asset),
+                    ),
+                    ValueListenableBuilder<List<AssetEntity>>(
+                      valueListenable: selectedAssets,
+                      builder: (_, selected, __) {
+                        final isSelected = selected.contains(asset);
+                        return Positioned(
+                          top: 6,
+                          right: 6,
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 300),
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              color:
+                                  isSelected
+                                      ? AppColors.primary
+                                      : Colors.white.withOpacity(0.7),
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: AppColors.primary,
+                                width: 1,
                               ),
                             ),
-                          );
-                        },
-                      ),
-                    ],
-                  ),
+                            child: Icon(
+                              isSelected
+                                  ? Icons.check
+                                  : Icons.radio_button_unchecked,
+                              color:
+                                  isSelected ? Colors.white : AppColors.primary,
+                              size: 14,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
                 ),
               );
             },
@@ -357,11 +289,15 @@ class _GalleryPickerScreenState extends State<GalleryPickerScreen> {
       ),
       floatingActionButton: ValueListenableBuilder<List<AssetEntity>>(
         valueListenable: selectedAssets,
-        builder: (context, selected, child) {
+        builder: (context, selected, _) {
           return AnimatedOpacity(
             opacity: selected.isNotEmpty ? 1.0 : 0.6,
             duration: const Duration(milliseconds: 300),
             child: ElevatedButton(
+              onPressed:
+                  selected.isNotEmpty
+                      ? () => _validateAndSubmitSelection(selected)
+                      : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 padding: const EdgeInsets.symmetric(
@@ -371,24 +307,13 @@ class _GalleryPickerScreenState extends State<GalleryPickerScreen> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(50),
                 ),
-                elevation: 6,
               ),
-              onPressed: () {
-                if (selected.isNotEmpty) {
-                  _validateAndSubmitSelection(selected);
-                } else {
-                  // AppSnackbar.showError(
-                  //   context,
-                  //   "Please select at least 1 image",
-                  // );
-                }
-              },
               child: const Text(
                 "Done",
                 style: TextStyle(
-                  color: Colors.white,
                   fontWeight: FontWeight.w600,
                   fontSize: 16,
+                  color: Colors.white,
                 ),
               ),
             ),
@@ -400,7 +325,7 @@ class _GalleryPickerScreenState extends State<GalleryPickerScreen> {
   }
 }
 
-// New static bottom sheet class
+// Helper bottom sheet UI
 class _GalleryPickerBottomSheet {
   static void showInvalidFilesBottomSheet(
     BuildContext context,
@@ -413,7 +338,6 @@ class _GalleryPickerBottomSheet {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      // make background transparent for animation
       builder: (context) {
         return AnimatedPadding(
           padding: MediaQuery.of(context).viewInsets,
@@ -431,11 +355,10 @@ class _GalleryPickerBottomSheet {
               expand: false,
               builder: (context, scrollController) {
                 return Padding(
-                  padding: const EdgeInsets.all(15.0),
+                  padding: const EdgeInsets.all(15),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Title
                       Text(
                         'File(s) Restriction',
                         style: TextStyle(
@@ -445,10 +368,8 @@ class _GalleryPickerBottomSheet {
                         ),
                       ),
                       const SizedBox(height: 15),
-
-                      // Description
                       const Text(
-                        'Some files were discarded because they are either WebP format or larger than 5MB. Please select files under 5MB in supported formats.',
+                        'Some files were discarded because they are either WebP format or larger than 5MB.',
                         style: TextStyle(
                           color: Colors.red,
                           fontSize: 14,
@@ -456,10 +377,9 @@ class _GalleryPickerBottomSheet {
                         ),
                       ),
                       const SizedBox(height: 20),
-
-                      // Scrollable Images
                       Expanded(
                         child: SingleChildScrollView(
+                          controller: scrollController,
                           child: Wrap(
                             spacing: 12,
                             runSpacing: 12,
@@ -467,21 +387,15 @@ class _GalleryPickerBottomSheet {
                                 invalidFiles.map((item) {
                                   final File file = item['file'];
                                   final String reason = item['reason'];
-                                  final String reasonLabel =
-                                      reason == 'format'
-                                          ? 'due to .webp'
-                                          : 'due to size';
-
                                   return Container(
                                     width: 100,
+                                    padding: const EdgeInsets.all(6),
                                     decoration: BoxDecoration(
                                       border: Border.all(
                                         color: AppColors.borderColor,
-                                        width: 1,
                                       ),
                                       borderRadius: BorderRadius.circular(12),
                                     ),
-                                    padding: const EdgeInsets.all(6),
                                     child: Column(
                                       children: [
                                         ClipRRect(
@@ -502,7 +416,9 @@ class _GalleryPickerBottomSheet {
                                         ),
                                         const SizedBox(height: 6),
                                         Text(
-                                          reasonLabel,
+                                          reason == 'format'
+                                              ? 'due to .webp'
+                                              : 'due to size',
                                           style: const TextStyle(
                                             color: Colors.red,
                                             fontSize: 12,
@@ -517,10 +433,7 @@ class _GalleryPickerBottomSheet {
                           ),
                         ),
                       ),
-
                       const SizedBox(height: 20),
-
-                      // Close Button
                       SizedBox(
                         height: 45,
                         width: double.infinity,
@@ -530,11 +443,6 @@ class _GalleryPickerBottomSheet {
                             onProceedWithValid();
                           },
                           title: 'Close',
-                          textStyle: const TextStyle(
-                            fontSize: 16,
-                            color: Colors.white,
-                            fontWeight: FontWeight.w600,
-                          ),
                           boarderRadius: 20,
                           isShadowBottomLeft: true,
                         ),
@@ -559,14 +467,12 @@ Future<Map<String, dynamic>> validateAndHandleImages({
   List<Map<String, dynamic>> invalidFiles = [];
 
   for (File file in files) {
-    String fileName = path.basename(file.path);
-    if (fileName.toLowerCase().endsWith('.webp')) {
+    final String fileName = path.basename(file.path).toLowerCase();
+    if (fileName.endsWith('.webp')) {
       invalidFiles.add({'file': file, 'reason': 'format'});
     } else {
-      // Simulate size check
-      int fileSizeInBytes = await file.length();
-      if (fileSizeInBytes > 5 * 1024 * 1024) {
-        // 5MB
+      int size = await file.length();
+      if (size > 5 * 1024 * 1024) {
         invalidFiles.add({'file': file, 'reason': 'size'});
       } else {
         validFiles.add(file);
