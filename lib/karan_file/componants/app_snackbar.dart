@@ -2,59 +2,71 @@ import 'package:flutter/material.dart';
 import '../../themes_colors/colors.dart';
 
 class AppSnackbar {
-  static void showError(BuildContext context, String message, {bool top = false}) {
+  static void showError(
+    BuildContext context,
+    String message, {
+    bool top = false,
+  }) {
     _showSnackBar(
       context,
       message,
-      backgroundColor: AppColors.error.withOpacity(0.9),
+      backgroundColor: AppColors.error.withValues(alpha: 0.9),
       icon: Icons.warning_amber_rounded,
       top: top,
     );
   }
 
-  static void showSuccess(BuildContext context, String message, {bool top = false}) {
+  static void showSuccess(
+    BuildContext context,
+    String message, {
+    bool top = false,
+  }) {
     _showSnackBar(
       context,
       message,
-      backgroundColor: AppColors.secondPrimary.withOpacity(0.95),
+      backgroundColor: AppColors.secondPrimary.withValues(alpha: 0.95),
       icon: Icons.check_circle_rounded,
       top: top,
     );
   }
 
-  static void showInfo(BuildContext context, String message, {bool top = false}) {
+  static void showInfo(
+    BuildContext context,
+    String message, {
+    bool top = false,
+  }) {
     _showSnackBar(
       context,
       message,
-      backgroundColor: AppColors.primary.withOpacity(0.95),
+      backgroundColor: AppColors.primary.withValues(alpha: 0.95),
       icon: Icons.info_outline,
       top: top,
     );
   }
 
   static void _showSnackBar(
-      BuildContext context,
-      String message, {
-        required Color backgroundColor,
-        required IconData icon,
-        bool top = false,
-      }) {
+    BuildContext context,
+    String message, {
+    required Color backgroundColor,
+    required IconData icon,
+    bool top = false,
+  }) {
     final overlay = Overlay.of(context);
-    if (overlay == null) return;
 
     final overlayEntry = OverlayEntry(
-      builder: (context) => Positioned(
-        top: top ? 100 : null,
-        bottom: top ? null : 80,
-        left: 20,
-        right: 20,
-        child: AnimatedSnackBarContent(
-          message: message,
-          icon: icon,
-          backgroundColor: backgroundColor,
-          fromTop: top,
-        ),
-      ),
+      builder:
+          (context) => Positioned(
+            top: top ? 100 : null,
+            bottom: top ? null : 80,
+            left: 20,
+            right: 20,
+            child: AnimatedSnackBarContent(
+              message: message,
+              icon: icon,
+              backgroundColor: backgroundColor,
+              fromTop: top,
+            ),
+          ),
     );
 
     overlay.insert(overlayEntry);
@@ -80,7 +92,8 @@ class AnimatedSnackBarContent extends StatefulWidget {
   });
 
   @override
-  State<AnimatedSnackBarContent> createState() => _AnimatedSnackBarContentState();
+  State<AnimatedSnackBarContent> createState() =>
+      _AnimatedSnackBarContentState();
 }
 
 class _AnimatedSnackBarContentState extends State<AnimatedSnackBarContent>
@@ -99,10 +112,7 @@ class _AnimatedSnackBarContentState extends State<AnimatedSnackBarContent>
     _offsetAnimation = Tween<Offset>(
       begin: widget.fromTop ? const Offset(0, -1) : const Offset(0, 1),
       end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeOut,
-    ));
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
 
     _controller.forward();
   }

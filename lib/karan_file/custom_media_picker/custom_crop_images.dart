@@ -4,18 +4,9 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:myco_karan/karan_file/custom_loader/custom_loader.dart';
 import 'package:photo_manager/photo_manager.dart';
-import 'dart:math' as math;
 import '../../themes_colors/colors.dart';
 
-
-
-class EditorTheme {
-
-
-
-
-}
-
+class EditorTheme {}
 
 enum CropShape { rectangle, circle }
 
@@ -26,8 +17,6 @@ class CropAspectRatio {
 
   const CropAspectRatio({required this.label, this.value, required this.icon});
 }
-
-
 
 class CustomCropImageScreen extends StatefulWidget {
   final List<AssetEntity> assets;
@@ -284,8 +273,9 @@ class _CustomCropImageScreenState extends State<CustomCropImageScreen> {
   void _applyAspectRatio() {
     setState(() {
       _cropAspectRatios[_currentIndex] = _selectedAspectRatio;
-      if (!_cropRects.containsKey(_currentIndex) || _imageDisplaySize == null)
+      if (!_cropRects.containsKey(_currentIndex) || _imageDisplaySize == null) {
         return;
+      }
 
       final ratio = _selectedAspectRatio.value;
       if (ratio == null) return;
@@ -384,15 +374,14 @@ class _CustomCropImageScreenState extends State<CustomCropImageScreen> {
 
   Widget _buildEditingToolbar() {
     return ClipRRect(
-      // Add ClipRRect for rounded corners and to contain the blur
       borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-      // Example: rounded top corners
+
       child: BackdropFilter(
         filter: ui.ImageFilter.blur(sigmaX: 20.0, sigmaY: 20.0),
-        // Adjust blur as needed
+
         child: Container(
           decoration: BoxDecoration(
-            color: AppColors.primary.withOpacity(0.3),
+            color: AppColors.primary.withValues(alpha: 0.3),
           ),
           child: Column(
             children: [
@@ -417,8 +406,7 @@ class _CustomCropImageScreenState extends State<CustomCropImageScreen> {
                   ],
                 ),
               ),
-              Divider(height: 1, color: AppColors.white.withOpacity(0.5)),
-              // Adjust Divider color
+              Divider(height: 1, color: AppColors.white.withValues(alpha: 0.5)),
               SizedBox(
                 height: 60,
                 child: ListView.builder(
@@ -445,9 +433,7 @@ class _CustomCropImageScreenState extends State<CustomCropImageScreen> {
                               color:
                                   isSelected
                                       ? AppColors.white
-                                      : AppColors.white.withOpacity(
-                                        0.7,
-                                      ), // Adjust icon color for transparency
+                                      : AppColors.white.withValues(alpha: 0.7),
                             ),
                             const SizedBox(height: 4),
                             Text(
@@ -457,8 +443,10 @@ class _CustomCropImageScreenState extends State<CustomCropImageScreen> {
                                 color:
                                     isSelected
                                         ? AppColors.white
-                                        : AppColors.white.withOpacity(0.7),
-                                // Adjust text color for transparency
+                                        : AppColors.white.withValues(
+                                          alpha: 0.7,
+                                        ),
+
                                 fontWeight:
                                     isSelected
                                         ? FontWeight.bold
@@ -486,10 +474,10 @@ class _CustomCropImageScreenState extends State<CustomCropImageScreen> {
   }) => InkWell(
     onTap: onPressed,
     borderRadius: BorderRadius.circular(8),
-    highlightColor: AppColors.primary.withOpacity(0.3),
-    // Added highlight
-    splashColor: AppColors.primary.withOpacity(0.5),
-    // Added splash
+    highlightColor: AppColors.primary.withValues(alpha: 0.3),
+
+    splashColor: AppColors.primary.withValues(alpha: 0.5),
+
     child: Padding(
       padding: const EdgeInsets.all(8.0),
       child: Column(
@@ -511,10 +499,10 @@ class _CustomCropImageScreenState extends State<CustomCropImageScreen> {
     return InkWell(
       onTap: () => _onShapeChanged(shape),
       borderRadius: BorderRadius.circular(8),
-      highlightColor: AppColors.primary.withOpacity(0.3),
-      // Added highlight
-      splashColor: AppColors.primary.withOpacity(0.5),
-      // Added splash
+      highlightColor: AppColors.primary.withValues(alpha: 0.3),
+
+      splashColor: AppColors.primary.withValues(alpha: 0.5),
+
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
@@ -526,7 +514,7 @@ class _CustomCropImageScreenState extends State<CustomCropImageScreen> {
               color:
                   isSelected
                       ? AppColors.white
-                      : AppColors.white.withOpacity(0.3),
+                      : AppColors.white.withValues(alpha: 0.3),
             ),
             const SizedBox(height: 4),
             Text(
@@ -536,7 +524,7 @@ class _CustomCropImageScreenState extends State<CustomCropImageScreen> {
                 color:
                     isSelected
                         ? AppColors.white
-                        : AppColors.white.withOpacity(0.3),
+                        : AppColors.white.withValues(alpha: 0.3),
               ),
             ),
           ],
@@ -548,7 +536,7 @@ class _CustomCropImageScreenState extends State<CustomCropImageScreen> {
   Widget _buildThumbnailList() => Container(
     height: 90,
     padding: const EdgeInsets.symmetric(vertical: 10),
-    color: AppColors.black.withOpacity(0.5),
+    color: AppColors.black.withValues(alpha: 0.5),
     child: ListView.separated(
       scrollDirection: Axis.horizontal,
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -705,8 +693,9 @@ class _ResizableCropAreaState extends State<ResizableCropArea> {
   void _onPanUpdate(DragUpdateDetails details) {
     if (_activeHandle == _DragHandle.none ||
         _rect == null ||
-        widget.parentSize == null)
+        widget.parentSize == null) {
       return;
+    }
 
     Rect newRect = _rect!;
     final delta = details.delta;
@@ -844,13 +833,14 @@ class _CropRectPainter extends CustomPainter {
   final CropShape shape;
   static const double _handleSize = 8.0;
 
-  final Paint _backgroundPaint = Paint()..color = Colors.black.withOpacity(0.7);
+  final Paint _backgroundPaint =
+      Paint()..color = Colors.black.withValues(alpha: 0.7);
   final Paint _borderPaint =
       Paint()
         ..color = AppColors.primary
         ..style = PaintingStyle.stroke
         ..strokeWidth = 2.0;
-  final Paint _handlePaint = Paint()..color = AppColors.white; // Changed color
+  final Paint _handlePaint = Paint()..color = AppColors.white;
 
   _CropRectPainter({required this.rect, required this.shape});
 
