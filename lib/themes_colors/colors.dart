@@ -16,4 +16,5 @@ class AppColors {
   static const Color subTitleColor = Color(0xFF101828);
   static const Color imagePickerBg = Color(0xFFEEF7FD);
   static const Color textFieldColor = Color(0xFF101828);
+  static const Color onCancleBtn = Color(0xFFE0E0E0);
 }

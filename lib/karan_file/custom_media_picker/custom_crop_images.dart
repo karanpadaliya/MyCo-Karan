@@ -7,20 +7,27 @@ import 'package:photo_manager/photo_manager.dart';
 import 'dart:math' as math;
 import '../../themes_colors/colors.dart';
 
+
+
 class EditorTheme {
-  static const Color background = Color(0xFF121822);
-  static const Color surface = Color(0xFF1A2433);
-  static const Color onSurface = Color(0xFFEAEBEE);
+
+
+
+
 }
+
 
 enum CropShape { rectangle, circle }
 
 class CropAspectRatio {
   final String label;
   final double? value;
+  final IconData icon;
 
-  const CropAspectRatio({required this.label, this.value});
+  const CropAspectRatio({required this.label, this.value, required this.icon});
 }
+
+
 
 class CustomCropImageScreen extends StatefulWidget {
   final List<AssetEntity> assets;
@@ -32,40 +39,35 @@ class CustomCropImageScreen extends StatefulWidget {
 }
 
 class _CustomCropImageScreenState extends State<CustomCropImageScreen> {
-  final List<File?> _croppedFiles = [];
-  int _currentIndex = 0;
-  Rect? _cropRect;
-
   final GlobalKey _imageContainerKey = GlobalKey();
+  int _currentIndex = 0;
 
-  // State for new crop options
-  CropShape _selectedShape = CropShape.rectangle;
-  late CropAspectRatio _selectedAspectRatio;
+  final Map<int, Rect> _cropRects = {};
+  final Map<int, CropShape> _cropShapes = {};
+  final Map<int, CropAspectRatio> _cropAspectRatios = {};
 
-  // Performance: Make aspect ratios a constant list
   final List<CropAspectRatio> _aspectRatios = const [
-    CropAspectRatio(label: 'Free', value: null),
-    CropAspectRatio(label: '1:1', value: 1.0),
-    CropAspectRatio(label: '4:3', value: 4.0 / 3.0),
-    CropAspectRatio(label: '3:2', value: 3.0 / 2.0),
-    CropAspectRatio(label: '16:9', value: 16.0 / 9.0),
-    CropAspectRatio(label: '9:16', value: 9.0 / 16.0),
+    CropAspectRatio(label: 'Free', icon: Icons.crop_free, value: null),
+    CropAspectRatio(label: '1:1', icon: Icons.crop_square, value: 1.0),
+    CropAspectRatio(label: '4:3', icon: Icons.crop_landscape, value: 4.0 / 3.0),
+    CropAspectRatio(label: '3:4', icon: Icons.crop_portrait, value: 3.0 / 4.0),
+    CropAspectRatio(label: '16:9', icon: Icons.crop_16_9, value: 16.0 / 9.0),
+    CropAspectRatio(label: '9:16', icon: Icons.crop_7_5, value: 9.0 / 16.0),
   ];
+
+  late CropAspectRatio _selectedAspectRatio;
+  CropShape _selectedShape = CropShape.rectangle;
 
   @override
   void initState() {
     super.initState();
-    _initializeCropRect();
     _selectedAspectRatio = _aspectRatios.first;
-    _croppedFiles.addAll(List.generate(widget.assets.length, (_) => null));
     WidgetsBinding.instance.addPostFrameCallback((_) => _initializeCropRect());
   }
 
-  // Performance: Getter for image display size, cached if possible
   Size? get _imageDisplaySize {
-    // Only look up if null, otherwise use cached value (if stateful widget's renderbox doesn't change)
     final RenderBox? renderBox =
-    _imageContainerKey.currentContext?.findRenderObject() as RenderBox?;
+        _imageContainerKey.currentContext?.findRenderObject() as RenderBox?;
     return renderBox?.size;
   }
 
@@ -73,228 +75,225 @@ class _CustomCropImageScreenState extends State<CustomCropImageScreen> {
     final size = _imageDisplaySize;
     if (size == null) return;
     setState(() {
-      // Ensure the initial crop rect is within bounds and has a minimum size
-      double initialWidth = size.width * 0.7;
-      double initialHeight = size.height * 0.7;
-
-      if (initialWidth < 50) initialWidth = 50; // Minimum size
-      if (initialHeight < 50) initialHeight = 50; // Minimum size
-
-      _cropRect = Rect.fromCenter(
+      _cropRects[_currentIndex] = Rect.fromCenter(
         center: size.center(Offset.zero),
-        width: initialWidth,
-        height: initialHeight,
+        width: size.width * 0.8,
+        height: size.height * 0.8,
       );
-      _applyAspectRatio(_selectedAspectRatio);
+      _applyAspectRatio();
     });
   }
 
   void _resetCrop() {
     setState(() {
-      _croppedFiles[_currentIndex] != null;
+      _cropRects.remove(_currentIndex);
       _initializeCropRect();
     });
   }
 
-  Future<File?> _getImageFile(int index) async {
-    if (_croppedFiles.length > index && _croppedFiles[index] != null) {
-      return _croppedFiles[index];
-    }
-    return await widget.assets[index].file;
+  Future<Uint8List?> _getImagePreview(int index) async {
+    return widget.assets[index].thumbnailDataWithSize(
+      const ThumbnailSize(1080, 1080),
+    );
   }
 
   void _updateCropRect(Rect newRect) {
     setState(() {
-      _cropRect = newRect;
+      _cropRects[_currentIndex] = newRect;
     });
   }
 
-  Future<void> _cropManually() async {
-    if (_cropRect == null ||
-        _imageDisplaySize == null ||
-        _imageDisplaySize!.isEmpty) return;
-    final originalFile = await widget.assets[_currentIndex].file;
-    if (originalFile == null) return;
-
-    if (!mounted) return; // Check mounted before showing dialog
+  Future<void> _processAndSaveChanges() async {
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) => const Center(child: CustomLoader()),
     );
 
-    try {
-      final bytes = await originalFile.readAsBytes();
-      final codec = await ui.instantiateImageCodec(bytes);
-      final frame = await codec.getNextFrame();
-      final originalImage = frame.image;
+    final List<File> finalFiles = [];
 
-      final imageFileRect = Rect.fromLTWH(
-        0,
-        0,
-        originalImage.width.toDouble(),
-        originalImage.height.toDouble(),
-      );
+    for (int i = 0; i < widget.assets.length; i++) {
+      final originalFile = await widget.assets[i].file;
+      if (originalFile == null) continue;
 
-      final fittedSizes = applyBoxFit(
-        BoxFit.contain,
-        imageFileRect.size,
-        _imageDisplaySize!,
-      );
-      final destinationRect = Alignment.center.inscribe(
-        fittedSizes.destination,
-        Rect.fromLTWH(
-          0,
-          0,
-          _imageDisplaySize!.width,
-          _imageDisplaySize!.height,
-        ),
-      );
+      if (_cropRects.containsKey(i)) {
+        try {
+          final cropRect = _cropRects[i]!;
+          final cropShape = _cropShapes[i] ?? CropShape.rectangle;
 
-      final scale = destinationRect.width / imageFileRect.width;
-      final offset = destinationRect.topLeft;
+          final bytes = await originalFile.readAsBytes();
+          final codec = await ui.instantiateImageCodec(bytes);
+          final frame = await codec.getNextFrame();
+          final originalImage = frame.image;
+          final imageSize = Size(
+            originalImage.width.toDouble(),
+            originalImage.height.toDouble(),
+          );
 
-      final cropRectInImageCoords = Rect.fromLTWH(
-        (_cropRect!.left - offset.dx) / scale,
-        (_cropRect!.top - offset.dy) / scale,
-        _cropRect!.width / scale,
-        _cropRect!.height / scale,
-      );
+          final previewSize = _imageDisplaySize!;
+          final fittedSizes = applyBoxFit(
+            BoxFit.contain,
+            imageSize,
+            previewSize,
+          );
+          final destinationRect = Alignment.center.inscribe(
+            fittedSizes.destination,
+            Rect.fromLTWH(0, 0, previewSize.width, previewSize.height),
+          );
+          final scale = destinationRect.width / imageSize.width;
+          final offset = destinationRect.topLeft;
 
-      final recorder = ui.PictureRecorder();
-      final canvas = Canvas(recorder);
-      final paint = Paint();
+          final cropRectInImageCoords = Rect.fromLTWH(
+            (cropRect.left - offset.dx) / scale,
+            (cropRect.top - offset.dy) / scale,
+            cropRect.width / scale,
+            cropRect.height / scale,
+          );
 
-      final outputRect = Rect.fromLTWH(
-        0,
-        0,
-        cropRectInImageCoords.width,
-        cropRectInImageCoords.height,
-      );
+          final recorder = ui.PictureRecorder();
+          final canvas = Canvas(recorder);
+          final paint = Paint()..isAntiAlias = true;
 
-      if (_selectedShape == CropShape.circle) {
-        canvas.clipPath(Path()..addOval(outputRect));
+          final outputRect = Rect.fromLTWH(
+            0,
+            0,
+            cropRectInImageCoords.width,
+            cropRectInImageCoords.height,
+          );
+
+          if (cropShape == CropShape.circle) {
+            canvas.clipPath(Path()..addOval(outputRect));
+          }
+
+          canvas.drawImageRect(
+            originalImage,
+            cropRectInImageCoords,
+            outputRect,
+            paint,
+          );
+
+          final picture = recorder.endRecording();
+          final croppedImage = await picture.toImage(
+            outputRect.width.toInt(),
+            outputRect.height.toInt(),
+          );
+          final byteData = await croppedImage.toByteData(
+            format: ui.ImageByteFormat.png,
+          );
+
+          if (byteData == null) continue;
+
+          final tempDir = Directory.systemTemp;
+          final file = File(
+            '${tempDir.path}/cropped_${DateTime.now().millisecondsSinceEpoch}.png',
+          );
+          await file.writeAsBytes(byteData.buffer.asUint8List());
+          finalFiles.add(file);
+        } catch (e) {
+          debugPrint('Error cropping image at index $i: $e');
+          finalFiles.add(originalFile);
+        }
+      } else {
+        finalFiles.add(originalFile);
       }
+    }
 
-      canvas.drawImageRect(
-        originalImage,
-        cropRectInImageCoords,
-        outputRect,
-        paint,
-      );
-
-      final picture = recorder.endRecording();
-      final croppedImage = await picture.toImage(
-        outputRect.width.toInt(),
-        outputRect.height.toInt(),
-      );
-
-      final byteData = await croppedImage.toByteData(
-        format:
-        ui.ImageByteFormat.png, // Performance: PNG is lossless but larger; consider JPEG for smaller files.
-      );
-      if (byteData == null) throw Exception("Failed to encode cropped image.");
-      final pngBytes = byteData.buffer.asUint8List();
-
-      final tempDir = Directory.systemTemp;
-      final file = File(
-        '${tempDir.path}/cropped_${DateTime.now().millisecondsSinceEpoch}.png',
-      );
-      await file.writeAsBytes(pngBytes);
-
-      setState(() {
-        _croppedFiles[_currentIndex] = file;
-      });
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('Error cropping image: $e')));
-      }
-    } finally {
-      if (mounted) Navigator.pop(context);
+    if (mounted) {
+      Navigator.pop(context);
+      Navigator.pop(context, finalFiles);
     }
   }
 
-  // Original method to apply crops and return files
-  void _applyAndReturn() {
-    // Performance: Future.wait is good for concurrent operations.
-    Future.wait(
-      _croppedFiles.asMap().entries.map((entry) async {
-        int idx = entry.key;
-        File? file = entry.value;
-        return file ?? await widget.assets[idx].file;
-      }),
-    ).then((resultFiles) {
-      final validFiles = resultFiles.whereType<File>().toList();
-      if (mounted) Navigator.pop(context, validFiles);
-    });
-  }
-
-  // New method to show the confirmation dialog
   void _showConfirmDialog() {
+    if (_cropRects.isEmpty) {
+      _applyAndReturnOriginals();
+      return;
+    }
+
     showDialog<bool>(
       context: context,
       builder: (BuildContext dialogContext) {
         return AlertDialog(
-          backgroundColor: EditorTheme.surface,
-          title: const Text(
-            'Confirm Crop & Save?',
-            style: TextStyle(color: EditorTheme.onSurface),
+          backgroundColor: AppColors.white,
+          title: Text(
+            'Apply Changes',
+            style: TextStyle(
+              color: AppColors.primary,
+              fontWeight: FontWeight.w500,
+            ),
           ),
-          content: const Text(
-            'Are you sure you want to apply these changes and save the cropped images?',
-            style: TextStyle(color: EditorTheme.onSurface),
+          content: Text(
+            'Do you want to save the changes made to these images?',
+            style: TextStyle(color: AppColors.black),
           ),
           actions: <Widget>[
             TextButton(
-              onPressed: () {
-                Navigator.of(dialogContext).pop(false); // Dismiss dialog, do not proceed
-              },
-              child: const Text('Cancel', style: TextStyle(color: AppColors.primary)),
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: Text(
+                'Cancel',
+                style: TextStyle(color: AppColors.onCancleBtn),
+              ),
             ),
             TextButton(
-              onPressed: () {
-                Navigator.of(dialogContext).pop(true); // Dismiss dialog, proceed
-              },
-              child: const Text('Confirm', style: TextStyle(color: AppColors.secondPrimary)),
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: Text(
+                'Confirm',
+                style: TextStyle(color: AppColors.primary),
+              ),
             ),
           ],
         );
       },
     ).then((confirmed) {
       if (confirmed == true) {
-        _applyAndReturn(); // Only proceed if confirmed
+        _processAndSaveChanges();
       }
     });
   }
 
+  void _applyAndReturnOriginals() async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) => const Center(child: CustomLoader()),
+    );
+    final originalFiles = await Future.wait(widget.assets.map((e) => e.file));
+    if (mounted) {
+      Navigator.pop(context);
+      Navigator.pop(context, originalFiles.whereType<File>().toList());
+    }
+  }
 
   void _onThumbnailTapped(int index) {
     if (_currentIndex != index) {
       setState(() {
         _currentIndex = index;
-        _cropRect = null; // Clear cropRect to re-initialize for new image
-      });
-      // Performance: PostFrameCallback is the correct way to ensure layout before calculating rect.
-      WidgetsBinding.instance.addPostFrameCallback(
+        _selectedAspectRatio =
+            _cropAspectRatios[_currentIndex] ?? _aspectRatios.first;
+        _selectedShape = _cropShapes[_currentIndex] ?? CropShape.rectangle;
+
+        if (!_cropRects.containsKey(_currentIndex)) {
+          WidgetsBinding.instance.addPostFrameCallback(
             (_) => _initializeCropRect(),
-      );
+          );
+        }
+      });
     }
   }
 
-  void _applyAspectRatio(CropAspectRatio aspectRatio) {
+  void _applyAspectRatio() {
     setState(() {
-      _selectedAspectRatio = aspectRatio;
-      if (_cropRect == null || _imageDisplaySize == null) return;
+      _cropAspectRatios[_currentIndex] = _selectedAspectRatio;
+      if (!_cropRects.containsKey(_currentIndex) || _imageDisplaySize == null)
+        return;
 
-      final ratio = aspectRatio.value;
-      if (ratio == null) return; // Freeform, no change needed
+      final ratio = _selectedAspectRatio.value;
+      if (ratio == null) return;
 
-      Rect currentRect = _cropRect!;
+      Rect currentRect = _cropRects[_currentIndex]!;
       double newWidth = currentRect.width;
       double newHeight = newWidth / ratio;
 
-      // Adjust to fit within image display size
       if (newHeight > _imageDisplaySize!.height) {
         newHeight = _imageDisplaySize!.height;
         newWidth = newHeight * ratio;
@@ -304,7 +303,7 @@ class _CustomCropImageScreenState extends State<CustomCropImageScreen> {
         newHeight = newWidth / ratio;
       }
 
-      _cropRect = Rect.fromCenter(
+      _cropRects[_currentIndex] = Rect.fromCenter(
         center: currentRect.center,
         width: newWidth,
         height: newHeight,
@@ -312,30 +311,33 @@ class _CustomCropImageScreenState extends State<CustomCropImageScreen> {
     });
   }
 
+  void _onShapeChanged(CropShape shape) {
+    setState(() {
+      _selectedShape = shape;
+      _cropShapes[_currentIndex] = shape;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: EditorTheme.background,
+      backgroundColor: AppColors.black,
       appBar: _buildAppBar(),
       body: _buildBody(),
-      bottomNavigationBar: _buildBottomBar(),
     );
   }
 
   PreferredSizeWidget _buildAppBar() => AppBar(
-    backgroundColor: EditorTheme.surface,
+    backgroundColor: AppColors.primary,
+    foregroundColor: AppColors.white,
     elevation: 0,
-    iconTheme: const IconThemeData(color: EditorTheme.onSurface),
+
     title: const Text(
       'Edit & Crop',
-      style: TextStyle(
-        color: EditorTheme.onSurface,
-        fontWeight: FontWeight.bold,
-      ),
+      style: TextStyle(fontWeight: FontWeight.bold),
     ),
     centerTitle: true,
     actions: [
-      // Changed onPressed to call _showConfirmDialog
       IconButton(icon: const Icon(Icons.check), onPressed: _showConfirmDialog),
     ],
   );
@@ -351,97 +353,128 @@ class _CustomCropImageScreenState extends State<CustomCropImageScreen> {
   Widget _buildMainImageViewer() {
     return Expanded(
       child: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: FutureBuilder<File?>(
-          future: _getImageFile(_currentIndex),
-          builder: (context, snapshot) {
-            if (!snapshot.hasData) {
-              return const Center(child: CustomLoader());
-            }
-            final file = snapshot.data!;
+        padding: const EdgeInsets.all(16.0),
+        child: Container(
+          key: _imageContainerKey,
+          alignment: Alignment.center,
+          child: FutureBuilder<Uint8List?>(
+            future: _getImagePreview(_currentIndex),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) {
+                return const Center(child: CustomLoader());
+              }
+              final imageData = snapshot.data!;
 
-            return Container(
-              key: _imageContainerKey,
-              alignment: Alignment.center,
-              child: ResizableCropArea(
-                imageFile: file,
-                initialRect: _cropRect,
-                onRectChanged: _updateCropRect,
-                aspectRatio: _selectedAspectRatio,
-                shape: _selectedShape,
-                parentSize: _imageDisplaySize,
-              ),
-            );
-          },
+              return RepaintBoundary(
+                child: ResizableCropArea(
+                  imageData: imageData,
+                  initialRect: _cropRects[_currentIndex],
+                  onRectChanged: _updateCropRect,
+                  aspectRatio: _selectedAspectRatio,
+                  shape: _selectedShape,
+                  parentSize: _imageDisplaySize,
+                ),
+              );
+            },
+          ),
         ),
       ),
     );
   }
 
   Widget _buildEditingToolbar() {
-    return Container(
-      color: EditorTheme.surface,
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
+    return ClipRRect(
+      // Add ClipRRect for rounded corners and to contain the blur
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+      // Example: rounded top corners
+      child: BackdropFilter(
+        filter: ui.ImageFilter.blur(sigmaX: 20.0, sigmaY: 20.0),
+        // Adjust blur as needed
+        child: Container(
+          decoration: BoxDecoration(
+            color: AppColors.primary.withOpacity(0.3),
+          ),
+          child: Column(
             children: [
-              _buildToolbarButton(
-                icon: Icons.crop,
-                label: "Crop",
-                onPressed: _cropManually,
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    _buildToolbarButton(
+                      icon: Icons.refresh,
+                      label: "Reset",
+                      onPressed: _resetCrop,
+                    ),
+                    _buildShapeButton(
+                      icon: Icons.rectangle_outlined,
+                      shape: CropShape.rectangle,
+                    ),
+                    _buildShapeButton(
+                      icon: Icons.circle_outlined,
+                      shape: CropShape.circle,
+                    ),
+                  ],
+                ),
               ),
-              _buildToolbarButton(
-                icon: Icons.refresh,
-                label: "Reset",
-                onPressed: _resetCrop,
-              ),
-              // Performance: Use const for widget creation where possible
-              _buildShapeButton(
-                icon: Icons.rectangle_outlined,
-                shape: CropShape.rectangle,
-              ),
-              _buildShapeButton(
-                icon: Icons.circle_outlined,
-                shape: CropShape.circle,
+              Divider(height: 1, color: AppColors.white.withOpacity(0.5)),
+              // Adjust Divider color
+              SizedBox(
+                height: 60,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: _aspectRatios.length,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemBuilder: (context, index) {
+                    final ratio = _aspectRatios[index];
+                    final isSelected =
+                        ratio.label == _selectedAspectRatio.label;
+                    return GestureDetector(
+                      onTap: () {
+                        _selectedAspectRatio = ratio;
+                        _applyAspectRatio();
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        alignment: Alignment.center,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              ratio.icon,
+                              color:
+                                  isSelected
+                                      ? AppColors.white
+                                      : AppColors.white.withOpacity(
+                                        0.7,
+                                      ), // Adjust icon color for transparency
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              ratio.label,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color:
+                                    isSelected
+                                        ? AppColors.white
+                                        : AppColors.white.withOpacity(0.7),
+                                // Adjust text color for transparency
+                                fontWeight:
+                                    isSelected
+                                        ? FontWeight.bold
+                                        : FontWeight.normal,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
               ),
             ],
           ),
-          const Divider(
-            height: 1,
-            color: EditorTheme.background,
-          ), // Performance: const
-          SizedBox(
-            height: 50,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: _aspectRatios.length,
-              itemBuilder: (context, index) {
-                final ratio = _aspectRatios[index];
-                final isSelected = ratio.label == _selectedAspectRatio.label;
-                return GestureDetector(
-                  onTap: () => _applyAspectRatio(ratio),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    // Performance: const
-                    alignment: Alignment.center,
-                    child: Text(
-                      ratio.label,
-                      style: TextStyle(
-                        color:
-                        isSelected
-                            ? AppColors.secondPrimary
-                            : EditorTheme.onSurface,
-                        fontWeight:
-                        isSelected ? FontWeight.bold : FontWeight.normal,
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -450,103 +483,125 @@ class _CustomCropImageScreenState extends State<CustomCropImageScreen> {
     required IconData icon,
     required String label,
     required VoidCallback onPressed,
-  }) => TextButton.icon(
-    onPressed: onPressed,
-    icon: Icon(icon, color: EditorTheme.onSurface, size: 20),
-    // Performance: Color and size are fixed, could be const if not dynamic
-    label: Text(
-      label,
-      style: TextStyle(color: EditorTheme.onSurface),
-    ), // Performance: const
+  }) => InkWell(
+    onTap: onPressed,
+    borderRadius: BorderRadius.circular(8),
+    highlightColor: AppColors.primary.withOpacity(0.3),
+    // Added highlight
+    splashColor: AppColors.primary.withOpacity(0.5),
+    // Added splash
+    child: Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: AppColors.secondary, size: 24),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: const TextStyle(color: AppColors.secondary, fontSize: 12),
+          ),
+        ],
+      ),
+    ),
   );
 
   Widget _buildShapeButton({required IconData icon, required CropShape shape}) {
     final isSelected = _selectedShape == shape;
-    return IconButton(
-      onPressed: () => setState(() => _selectedShape = shape),
-      icon: Icon(
-        icon,
-        color: isSelected ? AppColors.secondPrimary : EditorTheme.onSurface,
+    return InkWell(
+      onTap: () => _onShapeChanged(shape),
+      borderRadius: BorderRadius.circular(8),
+      highlightColor: AppColors.primary.withOpacity(0.3),
+      // Added highlight
+      splashColor: AppColors.primary.withOpacity(0.5),
+      // Added splash
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 24,
+              color:
+                  isSelected
+                      ? AppColors.white
+                      : AppColors.white.withOpacity(0.3),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              shape.toString().split('.').last.capitalize(),
+              style: TextStyle(
+                fontSize: 12,
+                color:
+                    isSelected
+                        ? AppColors.white
+                        : AppColors.white.withOpacity(0.3),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildThumbnailList() => Container(
     height: 90,
-    padding: const EdgeInsets.symmetric(vertical: 10), // Performance: const
-    color: EditorTheme.surface.withOpacity(0.5),
+    padding: const EdgeInsets.symmetric(vertical: 10),
+    color: AppColors.black.withOpacity(0.5),
     child: ListView.separated(
       scrollDirection: Axis.horizontal,
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      // Performance: const
       itemCount: widget.assets.length,
       separatorBuilder: (_, __) => const SizedBox(width: 12),
-      // Performance: const
       itemBuilder: (context, index) {
         final isSelected = index == _currentIndex;
-        final isCropped = _croppedFiles[index] != null;
+        final isEdited = _cropRects.containsKey(index);
         return GestureDetector(
           onTap: () => _onThumbnailTapped(index),
           child: AspectRatio(
             aspectRatio: 1,
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 300),
-              // Performance: const
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
-                // Performance: const
                 border: Border.all(
-                  color:
-                  isSelected ? AppColors.secondPrimary : Colors.transparent,
-                  width: 3,
+                  color: isSelected ? AppColors.white : Colors.transparent,
+                  width: 2,
                 ),
-                boxShadow:
-                isSelected
-                    ? [
-                  BoxShadow(
-                    color: AppColors.secondPrimary.withOpacity(0.5),
-                    blurRadius: 8,
-                    spreadRadius: 1,
-                  ),
-                ]
-                    : [],
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(9),
-                // Performance: const
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
                     FutureBuilder<Uint8List?>(
-                      // Performance: PhotoManager thumbnail generation is efficient.
                       future: widget.assets[index].thumbnailDataWithSize(
-                        const ThumbnailSize(200, 200), // Performance: const
+                        const ThumbnailSize(200, 200),
                       ),
                       builder:
                           (context, snapshot) =>
-                      snapshot.hasData
-                          ? Image.memory(
-                        snapshot.data!,
-                        fit: BoxFit.cover,
-                      )
-                          : Container(color: EditorTheme.surface),
+                              snapshot.hasData
+                                  ? Image.memory(
+                                    snapshot.data!,
+                                    fit: BoxFit.cover,
+                                  )
+                                  : Container(color: AppColors.secondary),
                     ),
-                    if (isCropped)
+                    if (isEdited)
                       Positioned(
                         top: 4,
                         right: 4,
                         child: Container(
-                          padding: const EdgeInsets.all(
-                            2,
-                          ), // Performance: const
-                          decoration: const BoxDecoration(
-                            color: AppColors.secondPrimary,
+                          padding: const EdgeInsets.all(2),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary,
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(
-                            Icons.check,
-                            size: 14,
-                            color: EditorTheme.background,
+                          child: Icon(
+                            Icons.edit,
+                            size: 12,
+                            color: AppColors.white,
                           ),
                         ),
                       ),
@@ -559,31 +614,32 @@ class _CustomCropImageScreenState extends State<CustomCropImageScreen> {
       },
     ),
   );
-
-  Widget _buildBottomBar() =>
-      const SizedBox.shrink(); // Moved controls to toolbar
 }
 
-// --- WIDGET FOR RESIZABLE CROP AREA ---
+extension on String {
+  String capitalize() {
+    return "${this[0].toUpperCase()}${substring(1)}";
+  }
+}
 
 enum _DragHandle { none, center, topLeft, topRight, bottomLeft, bottomRight }
 
 class ResizableCropArea extends StatefulWidget {
-  final File imageFile;
+  final Uint8List imageData;
   final Rect? initialRect;
   final ValueChanged<Rect> onRectChanged;
   final CropAspectRatio aspectRatio;
   final CropShape shape;
-  final Size? parentSize; // Add parentSize for constraining
+  final Size? parentSize;
 
   const ResizableCropArea({
     super.key,
-    required this.imageFile,
+    required this.imageData,
     this.initialRect,
     required this.onRectChanged,
     required this.aspectRatio,
     required this.shape,
-    this.parentSize, // Make sure to pass this from parent
+    this.parentSize,
   });
 
   @override
@@ -594,9 +650,8 @@ class _ResizableCropAreaState extends State<ResizableCropArea> {
   Rect? _rect;
   _DragHandle _activeHandle = _DragHandle.none;
 
-  // Performance: Make constants final static
-  static const double _handleSize = 24.0; // Increased handle touch area
-  static const double _minCropSize = 50.0; // Minimum size for crop rect
+  static const double _handleTouchSize = 32.0;
+  static const double _minCropSize = 50.0;
 
   @override
   void initState() {
@@ -607,171 +662,112 @@ class _ResizableCropAreaState extends State<ResizableCropArea> {
   @override
   void didUpdateWidget(covariant ResizableCropArea oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Performance: Only update _rect from initialRect if no active drag AND initialRect has actually changed.
-    // This prevents unnecessary _rect updates during a drag if the parent rebuilds for another reason.
     if (widget.initialRect != oldWidget.initialRect &&
         _activeHandle == _DragHandle.none) {
-      _rect = widget.initialRect;
+      setState(() {
+        _rect = widget.initialRect;
+      });
     }
-    // Performance: If aspect ratio or shape changes during a drag, ensure a valid rect.
-    // This is handled by _applyAspectRatio in the parent, which will then trigger _updateCropRect.
   }
 
-  // Helper to get the correct handle for a given position
   _DragHandle _getHandleForPosition(Offset position) {
     if (_rect == null) return _DragHandle.none;
 
-    // Check corner handles first (larger touch area)
-    // Performance: These Rects are created on every tap/panStart, consider caching if many handles.
-    // For 4 handles, it's negligible.
     final handleRects = {
-      _DragHandle.topLeft: Rect.fromLTWH(
-        _rect!.topLeft.dx - _handleSize / 2,
-        _rect!.topLeft.dy - _handleSize / 2,
-        _handleSize,
-        _handleSize,
+      _DragHandle.topLeft: Rect.fromCenter(
+        center: _rect!.topLeft,
+        width: _handleTouchSize,
+        height: _handleTouchSize,
       ),
-      _DragHandle.topRight: Rect.fromLTWH(
-        _rect!.topRight.dx - _handleSize / 2,
-        _rect!.topRight.dy - _handleSize / 2,
-        _handleSize,
-        _handleSize,
+      _DragHandle.topRight: Rect.fromCenter(
+        center: _rect!.topRight,
+        width: _handleTouchSize,
+        height: _handleTouchSize,
       ),
-      _DragHandle.bottomLeft: Rect.fromLTWH(
-        _rect!.bottomLeft.dx - _handleSize / 2,
-        _rect!.bottomLeft.dy - _handleSize / 2,
-        _handleSize,
-        _handleSize,
+      _DragHandle.bottomLeft: Rect.fromCenter(
+        center: _rect!.bottomLeft,
+        width: _handleTouchSize,
+        height: _handleTouchSize,
       ),
-      _DragHandle.bottomRight: Rect.fromLTWH(
-        _rect!.bottomRight.dx - _handleSize / 2,
-        _rect!.bottomRight.dy - _handleSize / 2,
-        _handleSize,
-        _handleSize,
+      _DragHandle.bottomRight: Rect.fromCenter(
+        center: _rect!.bottomRight,
+        width: _handleTouchSize,
+        height: _handleTouchSize,
       ),
     };
-
     for (final entry in handleRects.entries) {
       if (entry.value.contains(position)) return entry.key;
     }
-
-    // Check if dragging the center of the rectangle
     if (_rect!.contains(position)) return _DragHandle.center;
     return _DragHandle.none;
   }
 
-  // This method is critical for performance during drag.
-  // It should update _rect directly and then call onRectChanged.
   void _onPanUpdate(DragUpdateDetails details) {
     if (_activeHandle == _DragHandle.none ||
         _rect == null ||
-        widget.parentSize == null) return;
+        widget.parentSize == null)
+      return;
 
-    final double ratio = widget.aspectRatio.value ?? 0.0; // 0.0 for freeform
-    Rect newRect = _rect!; // Start with current rect
+    Rect newRect = _rect!;
+    final delta = details.delta;
 
     switch (_activeHandle) {
       case _DragHandle.center:
-        newRect = newRect.translate(details.delta.dx, details.delta.dy);
+        newRect = newRect.translate(delta.dx, delta.dy);
         break;
       case _DragHandle.topLeft:
-        newRect = Rect.fromLTRB(
-          newRect.left + details.delta.dx,
-          newRect.top + details.delta.dy,
-          newRect.right,
-          newRect.bottom,
-        );
+        newRect = Rect.fromPoints(newRect.bottomRight, newRect.topLeft + delta);
         break;
       case _DragHandle.topRight:
-        newRect = Rect.fromLTRB(
-          newRect.left,
-          newRect.top + details.delta.dy,
-          newRect.right + details.delta.dx,
-          newRect.bottom,
-        );
+        newRect = Rect.fromPoints(newRect.bottomLeft, newRect.topRight + delta);
         break;
       case _DragHandle.bottomLeft:
-        newRect = Rect.fromLTRB(
-          newRect.left + details.delta.dx,
-          newRect.top,
-          newRect.right,
-          newRect.bottom + details.delta.dy,
-        );
+        newRect = Rect.fromPoints(newRect.topRight, newRect.bottomLeft + delta);
         break;
       case _DragHandle.bottomRight:
-        newRect = Rect.fromLTRB(
-          newRect.left,
-          newRect.top,
-          newRect.right + details.delta.dx,
-          newRect.bottom + details.delta.dy,
-        );
+        newRect = Rect.fromPoints(newRect.topLeft, newRect.bottomRight + delta);
         break;
-      case _DragHandle.none:
+      default:
         break;
     }
 
-    // Apply aspect ratio for resizing handles
-    // Performance: Only apply aspect ratio if it's a resizing handle and ratio is fixed.
-    if (ratio != 0.0 && _activeHandle != _DragHandle.center) {
-      double calculatedWidth = newRect.width;
-      double calculatedHeight = newRect.height;
+    newRect = Rect.fromPoints(newRect.topLeft, newRect.bottomRight);
 
-      // Adjust based on aspect ratio
-      switch (_activeHandle) {
-        case _DragHandle.topLeft:
-        case _DragHandle.bottomRight:
-        // For diagonal handles, adjust both width/height based on the larger change.
-          if (calculatedWidth.abs() / ratio > calculatedHeight.abs()) {
-            calculatedHeight = calculatedWidth / ratio;
-          } else {
-            calculatedWidth = calculatedHeight * ratio;
-          }
-          break;
-        case _DragHandle.topRight:
-        case _DragHandle.bottomLeft:
-        // Similar for other diagonal handles, ensure consistent aspect ratio.
-          if (calculatedWidth.abs() / ratio > calculatedHeight.abs()) {
-            calculatedHeight = calculatedWidth / ratio;
-          } else {
-            calculatedWidth = calculatedHeight * ratio;
-          }
-          break;
-        default:
-          break;
-      }
-
-      // Reconstruct newRect based on calculated dimensions and original corner
+    final ratio = widget.aspectRatio.value;
+    if (ratio != null && _activeHandle != _DragHandle.center) {
+      double newWidth = newRect.width;
+      double newHeight = newWidth / ratio;
       switch (_activeHandle) {
         case _DragHandle.topLeft:
           newRect = Rect.fromLTWH(
-            newRect.right - calculatedWidth,
-            newRect.bottom - calculatedHeight,
-            calculatedWidth,
-            calculatedHeight,
-          );
-          break;
-        case _DragHandle.topRight:
-          newRect = Rect.fromLTWH(
-            newRect.left,
-            newRect.bottom - calculatedHeight,
-            calculatedWidth,
-            calculatedHeight,
-          );
-          break;
-        case _DragHandle.bottomLeft:
-          newRect = Rect.fromLTWH(
-            newRect.right - calculatedWidth,
-            newRect.top,
-            calculatedWidth,
-            calculatedHeight,
+            newRect.right - newWidth,
+            newRect.bottom - newHeight,
+            newWidth,
+            newHeight,
           );
           break;
         case _DragHandle.bottomRight:
           newRect = Rect.fromLTWH(
             newRect.left,
             newRect.top,
-            calculatedWidth,
-            calculatedHeight,
+            newWidth,
+            newHeight,
+          );
+          break;
+        case _DragHandle.topRight:
+          newRect = Rect.fromLTWH(
+            newRect.left,
+            newRect.bottom - newHeight,
+            newWidth,
+            newHeight,
+          );
+          break;
+        case _DragHandle.bottomLeft:
+          newRect = Rect.fromLTWH(
+            newRect.right - newWidth,
+            newRect.top,
+            newRect.width,
+            newHeight,
           );
           break;
         default:
@@ -779,104 +775,62 @@ class _ResizableCropAreaState extends State<ResizableCropArea> {
       }
     }
 
-    // Constrain to parent bounds *after* aspect ratio but *before* min size,
-    // as min size might push it out of bounds if not careful.
-    double left = math.max(0, newRect.left);
-    double top = math.max(0, newRect.top);
-    double right = math.min(widget.parentSize!.width, newRect.right);
-    double bottom = math.min(widget.parentSize!.height, newRect.bottom);
+    double left = newRect.left.clamp(0.0, widget.parentSize!.width);
+    double top = newRect.top.clamp(0.0, widget.parentSize!.height);
+    double right = newRect.right.clamp(0.0, widget.parentSize!.width);
+    double bottom = newRect.bottom.clamp(0.0, widget.parentSize!.height);
 
-    // Reconstruct newRect from constrained coordinates
-    newRect = Rect.fromLTRB(left, top, right, bottom);
+    if (right - left < _minCropSize) right = left + _minCropSize;
+    if (bottom - top < _minCropSize) bottom = top + _minCropSize;
 
-    // Ensure minimum size after constraining to parent bounds
-    // This order is important: constrain first, then apply min size, then re-constrain if min size push it out.
-    // A simpler way: if the current width/height is less than min, try to expand, but also clamp.
-    if (newRect.width < _minCropSize) {
-      newRect = Rect.fromLTWH(
-        newRect.left,
-        newRect.top,
-        math.max(_minCropSize, newRect.width), // Ensure at least min size
-        newRect.height,
-      );
-      // Re-clamp right if min size pushed it out
-      if (newRect.right > widget.parentSize!.width) {
-        newRect = Rect.fromLTRB(
-          widget.parentSize!.width - newRect.width,
-          newRect.top,
-          widget.parentSize!.width,
-          newRect.bottom,
-        );
-      }
-    }
-    if (newRect.height < _minCropSize) {
-      newRect = Rect.fromLTWH(
-        newRect.left,
-        newRect.top,
-        newRect.width,
-        math.max(_minCropSize, newRect.height), // Ensure at least min size
-      );
-      // Re-clamp bottom if min size pushed it out
-      if (newRect.bottom > widget.parentSize!.height) {
-        newRect = Rect.fromLTRB(
-          newRect.left,
-          widget.parentSize!.height - newRect.height,
-          newRect.right,
-          widget.parentSize!.height,
-        );
-      }
-    }
+    final constrainedRect = Rect.fromLTRB(
+      left.clamp(0.0, widget.parentSize!.width),
+      top.clamp(0.0, widget.parentSize!.height),
+      right.clamp(0.0, widget.parentSize!.width),
+      bottom.clamp(0.0, widget.parentSize!.height),
+    );
 
-    // Ensure width and height are positive (can become negative if dragged past each other)
-    // This typically happens if the user drags a handle across the opposite side.
-    // Ensure rect is valid before updating state.
-    if (newRect.width < 0 || newRect.height < 0) {
-      return; // Or handle more gracefully, e.g., snap back to previous valid state
-    }
+    setState(() {
+      _rect = constrainedRect;
+    });
+  }
 
-    if (_rect != newRect) {
-      setState(() {
-        _rect = newRect;
-      });
-      widget.onRectChanged(newRect);
+  void _onPanEnd(DragEndDetails details) {
+    if (_rect != null) {
+      widget.onRectChanged(_rect!);
     }
+    setState(() {
+      _activeHandle = _DragHandle.none;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    if (widget.parentSize == null || _rect == null) {
-      // This can happen on initial build before _imageContainerKey has rendered
-      // or if parentSize is not provided.
-      return Image.file(widget.imageFile, fit: BoxFit.contain);
+    if (_activeHandle == _DragHandle.none) {
+      _rect = widget.initialRect;
     }
 
-    // Performance: Use a RepaintBoundary if image is complex or frequently changing
-    // (though Image.file is often efficient).
+    if (widget.parentSize == null || _rect == null) {
+      return Image.memory(widget.imageData, fit: BoxFit.contain);
+    }
+
     return Stack(
       fit: StackFit.expand,
       children: [
-        // Display the image
-        Image.file(widget.imageFile, fit: BoxFit.contain),
-
-        // GestureDetector for crop area manipulation
+        Image.memory(widget.imageData, fit: BoxFit.contain),
         Positioned.fill(
           child: GestureDetector(
-            onPanStart: (details) {
-              setState(() {
-                _activeHandle = _getHandleForPosition(details.localPosition);
-              });
-            },
+            onPanStart:
+                (details) => setState(
+                  () =>
+                      _activeHandle = _getHandleForPosition(
+                        details.localPosition,
+                      ),
+                ),
             onPanUpdate: _onPanUpdate,
-            onPanEnd: (_) {
-              setState(() {
-                _activeHandle = _DragHandle.none;
-              });
-            },
-            // Performance: Pass the rect and shape to the painter directly
+            onPanEnd: _onPanEnd,
             child: CustomPaint(
               painter: _CropRectPainter(rect: _rect!, shape: widget.shape),
-              child:
-              Container(), // A dummy child to ensure CustomPaint takes up space
             ),
           ),
         ),
@@ -885,21 +839,18 @@ class _ResizableCropAreaState extends State<ResizableCropArea> {
   }
 }
 
-/// A custom painter to draw the crop overlay.
 class _CropRectPainter extends CustomPainter {
   final Rect rect;
   final CropShape shape;
-  static const double _handleSize = 8.0; // Smaller visual handles
+  static const double _handleSize = 8.0;
 
-  // Performance: Define paints once to avoid re-creation in every paint call
-  // Use final for these as they are not expected to change after initialization.
   final Paint _backgroundPaint = Paint()..color = Colors.black.withOpacity(0.7);
   final Paint _borderPaint =
-  Paint()
-    ..color = AppColors.white.withOpacity(0.9)
-    ..style = PaintingStyle.stroke
-    ..strokeWidth = 1.5;
-  final Paint _handlePaint = Paint()..color = AppColors.white;
+      Paint()
+        ..color = AppColors.primary
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.0;
+  final Paint _handlePaint = Paint()..color = AppColors.white; // Changed color
 
   _CropRectPainter({required this.rect, required this.shape});
 
@@ -920,14 +871,8 @@ class _CropRectPainter extends CustomPainter {
       ),
       _backgroundPaint,
     );
+    canvas.drawPath(clipPath, _borderPaint);
 
-    if (shape == CropShape.circle) {
-      canvas.drawOval(rect, _borderPaint);
-    } else {
-      canvas.drawRect(rect, _borderPaint);
-    }
-
-    // Draw handles only for rectangle shape
     if (shape == CropShape.rectangle) {
       canvas.drawCircle(rect.topLeft, _handleSize / 2, _handlePaint);
       canvas.drawCircle(rect.topRight, _handleSize / 2, _handlePaint);
@@ -936,7 +881,6 @@ class _CropRectPainter extends CustomPainter {
     }
   }
 
-  // Performance: Crucial for custom painters. Only repaint if rect or shape changes.
   @override
   bool shouldRepaint(covariant _CropRectPainter oldDelegate) =>
       oldDelegate.rect != rect || oldDelegate.shape != shape;
