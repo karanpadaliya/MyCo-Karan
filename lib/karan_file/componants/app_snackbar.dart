@@ -40,7 +40,6 @@ class AppSnackbar {
         bool top = false,
       }) {
     final overlay = Overlay.of(context);
-    if (overlay == null) return;
 
     final overlayEntry = OverlayEntry(
       builder: (context) => Positioned(

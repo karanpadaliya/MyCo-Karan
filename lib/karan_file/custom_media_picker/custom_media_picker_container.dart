@@ -22,7 +22,7 @@ class CustomMediaPickerContainer extends StatefulWidget {
   final bool isDocumentShow;
 
   const CustomMediaPickerContainer({
-    Key? key,
+    super.key,
     this.imageMargin,
     this.containerHeight,
     required this.title,
@@ -33,7 +33,7 @@ class CustomMediaPickerContainer extends StatefulWidget {
     this.isCameraShow = false,
     this.isGallaryShow = false,
     this.isDocumentShow = false,
-  }) : super(key: key);
+  });
 
   @override
   State<CustomMediaPickerContainer> createState() =>
@@ -42,7 +42,7 @@ class CustomMediaPickerContainer extends StatefulWidget {
 
 class _CustomMediaPickerContainerState
     extends State<CustomMediaPickerContainer> {
-  List<File> _pickedImages = [];
+  final List<File> _pickedImages = [];
   File? pickedFile;
 
   @override

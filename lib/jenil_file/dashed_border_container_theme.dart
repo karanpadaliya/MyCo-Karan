@@ -25,7 +25,7 @@ class DashedBorderContainer extends StatelessWidget {
   final double? width;
 
   const DashedBorderContainer({
-    Key? key,
+    super.key,
     required this.child,
     this.borderColor,
     this.borderRadius = 6.0,
@@ -36,7 +36,7 @@ class DashedBorderContainer extends StatelessWidget {
     this.onTap,
     this.height,
     this.width,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -120,11 +120,11 @@ class AttachmentGrid extends StatelessWidget {
   final double itemWidth;
 
   const AttachmentGrid({
-    Key? key,
+    super.key,
     required this.attachmentItems,
     this.itemHeight = 50,
     this.itemWidth = 160,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

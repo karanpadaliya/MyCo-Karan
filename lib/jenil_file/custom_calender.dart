@@ -98,20 +98,25 @@ class _CustomCalendarState extends State<CustomCalendar> {
   bool _isDateDisabled(DateTime date) {
     final today = DateTime.now();
     if (widget.disablePastDates &&
-        date.isBefore(DateTime(today.year, today.month, today.day)))
+        date.isBefore(DateTime(today.year, today.month, today.day))) {
       return true;
+    }
     if (widget.disableFutureDates &&
-        date.isAfter(DateTime(today.year, today.month, today.day)))
+        date.isAfter(DateTime(today.year, today.month, today.day))) {
       return true;
+    }
     if (widget.disableDatesBefore != null &&
-        date.isBefore(widget.disableDatesBefore!))
+        date.isBefore(widget.disableDatesBefore!)) {
       return true;
+    }
     if (widget.disableDatesAfter != null &&
-        date.isAfter(widget.disableDatesAfter!))
+        date.isAfter(widget.disableDatesAfter!)) {
       return true;
+    }
     if (widget.disableCustomDates != null &&
-        widget.disableCustomDates!.any((d) => _isSameDay(d, date)))
+        widget.disableCustomDates!.any((d) => _isSameDay(d, date))) {
       return true;
+    }
     final minYear = DateTime.now().year - widget.totalPreviousYear;
     final maxYear = DateTime.now().year + widget.totalNextYear;
     return date.year < minYear || date.year > maxYear;
@@ -354,7 +359,7 @@ class _CustomCalendarState extends State<CustomCalendar> {
               ],
             ),
           );
-        }).toList(),
+        }),
       ],
     );
   }
@@ -391,8 +396,9 @@ class _CustomCalendarState extends State<CustomCalendar> {
                     _displayedMonth.year,
                     _displayedMonth.month - 1,
                   );
-                  if (prev.year >= minYear)
+                  if (prev.year >= minYear) {
                     setState(() => _displayedMonth = prev);
+                  }
                 },
               ),
               Text(

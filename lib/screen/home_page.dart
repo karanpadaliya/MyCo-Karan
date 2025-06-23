@@ -1,26 +1,9 @@
-import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:marquee/marquee.dart';
 import 'package:myco_karan/karan_file/custom_media_picker/custom_media_picker_container.dart';
 import 'package:myco_karan/karan_file/custom_timer/custom_timer.dart';
-import '../jenil_file/bottomsheet_otp.dart';
-import '../jenil_file/bottomsheet_radio_btn.dart';
-import '../jenil_file/bottomsheet_travel_mode.dart';
-import '../jenil_file/myco_custom_tabbar.dart';
-import '../karan_file/custom_media_picker/media_picker.dart';
-import '../karan_file/custom_myco_button/custom_myco_button.dart';
-import '../main.dart';
-import '../maulik_file/current_opening_card.dart';
-import '../maulik_file/ios_calendar_time_picker.dart';
-import '../maulik_file/qr_scanner_page.dart';
-import '../maulik_file/see_less_more_widget.dart';
-import '../maulik_file/wfh_box.dart';
-import '../maulik_file/work_report_add_box.dart';
-import '../maulik_file/work_report_history_box.dart';
 import '../themes_colors/colors.dart';
-import '../tirth_file/custom_calendar.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});

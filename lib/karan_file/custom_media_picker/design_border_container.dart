@@ -26,7 +26,7 @@ class DesignBorderContainer extends StatelessWidget {
   final double? width;
 
   const DesignBorderContainer({
-    Key? key,
+    super.key,
     required this.child,
     this.borderColor,
     this.borderRadius = 50.0,
@@ -38,7 +38,7 @@ class DesignBorderContainer extends StatelessWidget {
     this.onTap,
     this.height,
     this.width,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

@@ -17,13 +17,13 @@ class _CustomCalendarState extends State<CustomCalendar> {
 
   SelectionMode _selectionMode = SelectionMode.multi;
 
-  List<DateTime> _selectedDays = [];
+  final List<DateTime> _selectedDays = [];
   DateTime? _rangeStart;
   DateTime? _rangeEnd;
   RangeSelectionMode _rangeSelectionMode = RangeSelectionMode.toggledOff;
 
-  Map<DateTime, String> _leaveTypeSelection = {};
-  Map<DateTime, Color> _customDayColors = {};
+  final Map<DateTime, String> _leaveTypeSelection = {};
+  final Map<DateTime, Color> _customDayColors = {};
 
   void _onDaySelected(DateTime selectedDay, DateTime focusedDay) {
     setState(() {
@@ -312,7 +312,7 @@ class _CustomCalendarState extends State<CustomCalendar> {
                         ],
                       ),
                     );
-                  }).toList(),
+                  }),
                 ],
               ),
             ),

@@ -22,7 +22,7 @@ class CustomTimer extends StatefulWidget {
   final VoidCallback? onCompleted;
 
   const CustomTimer({
-    Key? key,
+    super.key,
     this.maxMinutes = 10,
     this.minutesPerSegment = 2,
     this.strokeWidth = 20,
@@ -31,7 +31,7 @@ class CustomTimer extends StatefulWidget {
     this.primaryColor = const [Colors.teal],
     this.colorRanges = const [],
     this.onCompleted,
-  }) : super(key: key);
+  });
 
   @override
   State<CustomTimer> createState() => _CustomTimerState();

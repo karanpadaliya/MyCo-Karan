@@ -17,7 +17,7 @@ class CustomPopupDropdownStyled<T> extends StatelessWidget {
     this.hintText,
     this.onChanged,
     this.width,
-    this.height,
+    this.height, required hintTextStyle, required Border border,
   });
 
   @override

@@ -15,7 +15,7 @@ class CustomAssetsHolder extends StatefulWidget {
   final List<Color> gradientContainerColor;
   final VoidCallback? onViewMore;
 
-  CustomAssetsHolder({
+  const CustomAssetsHolder({
     super.key,
     required this.userName,
     required this.designation,

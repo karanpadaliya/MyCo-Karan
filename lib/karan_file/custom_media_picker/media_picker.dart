@@ -21,7 +21,7 @@ Future<List<File>?> showMediaFilePicker({
   int maxCount = 5,
   bool isCropImage = false,
 }) async {
-  bool _isLoading = false;
+  bool isLoading = false;
 
   return isDialog == true
       ? showDialog<List<File>>(
@@ -38,12 +38,12 @@ Future<List<File>?> showMediaFilePicker({
                         isCameraShow: isCameraShow,
                         isGallaryShow: isGallaryShow,
                         isDocumentShow: isDocumentShow,
-                        onLoading: (val) => setState(() => _isLoading = val),
+                        onLoading: (val) => setState(() => isLoading = val),
                         maxCount: maxCount,
                         isCropImage: isCropImage,
                       ),
                     ),
-                    if (_isLoading) const Center(child: CustomLoader()),
+                    if (isLoading) const Center(child: CustomLoader()),
                   ],
                 ),
           );
@@ -73,13 +73,13 @@ class _AnimatedBottomSheet extends StatefulWidget {
   final bool isCropImage;
 
   const _AnimatedBottomSheet({
-    Key? key,
+    super.key,
     required this.isCameraShow,
     required this.isGallaryShow,
     required this.isDocumentShow,
     required this.maxCount,
     required this.isCropImage,
-  }) : super(key: key);
+  });
 
   @override
   State<_AnimatedBottomSheet> createState() => _AnimatedBottomSheetState();
@@ -166,14 +166,14 @@ class _MediaFilePickerWidget extends StatefulWidget {
   final void Function(bool)? onLoading;
 
   const _MediaFilePickerWidget({
-    Key? key,
+    super.key,
     this.isCameraShow = false,
     this.isGallaryShow = false,
     this.isDocumentShow = false,
     this.onLoading,
     this.maxCount = 5,
     this.isCropImage = false,
-  }) : super(key: key);
+  });
 
   @override
   State<_MediaFilePickerWidget> createState() => _MediaFilePickerWidgetState();
