@@ -2,9 +2,8 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:photo_manager/photo_manager.dart';
-import 'package:shimmer/shimmer.dart';
 import 'package:path/path.dart' as path;
-
+import 'package:photo_manager_image_provider/photo_manager_image_provider.dart';
 import '../../themes_colors/colors.dart';
 import '../app_permissions/app_permissions.dart';
 import '../custom_loader/custom_loader.dart';
@@ -30,10 +29,13 @@ class GalleryPickerScreen extends StatefulWidget {
 class _GalleryPickerScreenState extends State<GalleryPickerScreen> {
   final ValueNotifier<List<AssetEntity>> selectedAssets = ValueNotifier([]);
   final ValueNotifier<bool> _isLoading = ValueNotifier(true);
+  final ScrollController _scrollController = ScrollController();
+  final List<AssetEntity> mediaList = [];
 
   List<AssetPathEntity> albums = [];
-  List<AssetEntity> mediaList = [];
-  final Map<AssetEntity, Future<Uint8List?>> _thumbnailCache = {};
+  int _currentPage = 0;
+  final int _pageSize = 60;
+  bool _isFetchingMore = false;
   int _currentMaxSelection = 0;
 
   @override
@@ -41,10 +43,23 @@ class _GalleryPickerScreenState extends State<GalleryPickerScreen> {
     super.initState();
     _currentMaxSelection = widget.maxSelection;
     _loadGallery(context);
+
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels >=
+              _scrollController.position.maxScrollExtent - 300 &&
+          !_isFetchingMore) {
+        _isFetchingMore = true;
+        _loadGallery(context, isInitial: false);
+      }
+    });
   }
 
-  Future<void> _loadGallery(BuildContext context) async {
-    _isLoading.value = true;
+  Future<void> _loadGallery(
+    BuildContext context, {
+    bool isInitial = true,
+  }) async {
+    if (isInitial) _isLoading.value = true;
+
     bool hasPermission = await PermissionUtil.checkPermissionByPickerType(
       'gallery',
       context,
@@ -55,15 +70,29 @@ class _GalleryPickerScreenState extends State<GalleryPickerScreen> {
     }
 
     try {
-      albums = await PhotoManager.getAssetPathList(
-        onlyAll: true,
-        type: RequestType.image,
+      if (albums.isEmpty) {
+        albums = await PhotoManager.getAssetPathList(
+          onlyAll: true,
+          type: RequestType.image,
+        );
+      }
+
+      final newAssets = await albums.first.getAssetListPaged(
+        page: _currentPage,
+        size: _pageSize,
       );
-      mediaList = await albums.first.getAssetListPaged(page: 0, size: 200);
+
+      if (newAssets.isNotEmpty) {
+        setState(() {
+          mediaList.addAll(newAssets);
+          _currentPage++;
+        });
+      }
     } catch (e) {
       debugPrint("Error loading gallery: $e");
     } finally {
-      _isLoading.value = false;
+      if (isInitial) _isLoading.value = false;
+      _isFetchingMore = false;
     }
   }
 
@@ -121,13 +150,10 @@ class _GalleryPickerScreenState extends State<GalleryPickerScreen> {
       );
 
       if (croppedFiles != null && croppedFiles.isNotEmpty) {
-        // Don't try to access .file on File objects
         widget.onSelectionDone(croppedFiles);
-      } else {
-        debugPrint('CroppedFiles are null or empty');
       }
     } else {
-      widget.onSelectionDone(validAssets); // Pass AssetEntity list directly
+      widget.onSelectionDone(validAssets);
     }
   }
 
@@ -149,40 +175,15 @@ class _GalleryPickerScreenState extends State<GalleryPickerScreen> {
   }
 
   Widget _buildImage(AssetEntity asset) {
-    _thumbnailCache.putIfAbsent(
-      asset,
-      () => asset.thumbnailDataWithSize(const ThumbnailSize(300, 300)),
-    );
-
-    return FutureBuilder<Uint8List?>(
-      future: _thumbnailCache[asset],
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.done &&
-            snapshot.hasData) {
-          return ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: Image.memory(
-              snapshot.data!,
-              fit: BoxFit.cover,
-              width: double.infinity,
-              height: double.infinity,
-            ),
-          );
-        } else {
-          return ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: Shimmer.fromColors(
-              baseColor: Colors.grey.shade300,
-              highlightColor: Colors.grey.shade100,
-              child: Container(
-                width: double.infinity,
-                height: double.infinity,
-                color: Colors.white,
-              ),
-            ),
-          );
-        }
-      },
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(12),
+      child: AssetEntityImage(
+        asset,
+        isOriginal: false,
+        thumbnailSize: const ThumbnailSize(300, 300),
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => const Icon(Icons.broken_image),
+      ),
     );
   }
 
@@ -190,7 +191,7 @@ class _GalleryPickerScreenState extends State<GalleryPickerScreen> {
   void dispose() {
     selectedAssets.dispose();
     _isLoading.dispose();
-    _thumbnailCache.clear();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -211,12 +212,37 @@ class _GalleryPickerScreenState extends State<GalleryPickerScreen> {
             );
           },
         ),
+        actions: [
+          ValueListenableBuilder<List<AssetEntity>>(
+            valueListenable: selectedAssets,
+            builder: (context, selected, _) {
+              return TextButton(
+                onPressed:
+                    selected.isNotEmpty
+                        ? () => _validateAndSubmitSelection(selected)
+                        : null,
+                child: Text(
+                  'Done',
+                  style: TextStyle(
+                    color:
+                        selected.isNotEmpty
+                            ? Colors.white
+                            : Colors.white.withOpacity(0.5),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
       ),
       body: ValueListenableBuilder<bool>(
         valueListenable: _isLoading,
         builder: (context, isLoading, _) {
           if (isLoading) return const Center(child: CustomLoader());
           return GridView.builder(
+            controller: _scrollController,
             padding: const EdgeInsets.all(10),
             itemCount: mediaList.length,
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -236,13 +262,6 @@ class _GalleryPickerScreenState extends State<GalleryPickerScreen> {
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(12),
                         color: Colors.grey.shade200,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black12,
-                            blurRadius: 4,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
                       ),
                       child: _buildImage(asset),
                     ),
@@ -286,42 +305,32 @@ class _GalleryPickerScreenState extends State<GalleryPickerScreen> {
           );
         },
       ),
-      floatingActionButton: ValueListenableBuilder<List<AssetEntity>>(
-        valueListenable: selectedAssets,
-        builder: (context, selected, _) {
-          return AnimatedOpacity(
-            opacity: selected.isNotEmpty ? 1.0 : 0.6,
-            duration: const Duration(milliseconds: 300),
-            child: ElevatedButton(
-              onPressed:
-                  selected.isNotEmpty
-                      ? () => _validateAndSubmitSelection(selected)
-                      : null,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 36,
-                  vertical: 16,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(50),
-                ),
-              ),
-              child: const Text(
-                "Done",
-                style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 16,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          );
-        },
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
+}
+
+Future<Map<String, dynamic>> validateAndHandleImages({
+  required BuildContext context,
+  required List<File> files,
+}) async {
+  List<File> validFiles = [];
+  List<Map<String, dynamic>> invalidFiles = [];
+
+  for (File file in files) {
+    final String fileName = path.basename(file.path).toLowerCase();
+    if (fileName.endsWith('.webp')) {
+      invalidFiles.add({'file': file, 'reason': 'format'});
+    } else {
+      int size = await file.length();
+      if (size > 5 * 1024 * 1024) {
+        invalidFiles.add({'file': file, 'reason': 'size'});
+      } else {
+        validFiles.add(file);
+      }
+    }
+  }
+
+  return {'validFiles': validFiles, 'invalidFiles': invalidFiles};
 }
 
 // Helper bottom sheet UI
@@ -455,28 +464,4 @@ class _GalleryPickerBottomSheet {
       },
     );
   }
-}
-
-Future<Map<String, dynamic>> validateAndHandleImages({
-  required BuildContext context,
-  required List<File> files,
-}) async {
-  List<File> validFiles = [];
-  List<Map<String, dynamic>> invalidFiles = [];
-
-  for (File file in files) {
-    final String fileName = path.basename(file.path).toLowerCase();
-    if (fileName.endsWith('.webp')) {
-      invalidFiles.add({'file': file, 'reason': 'format'});
-    } else {
-      int size = await file.length();
-      if (size > 5 * 1024 * 1024) {
-        invalidFiles.add({'file': file, 'reason': 'size'});
-      } else {
-        validFiles.add(file);
-      }
-    }
-  }
-
-  return {'validFiles': validFiles, 'invalidFiles': invalidFiles};
 }
