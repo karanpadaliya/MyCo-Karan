@@ -8,7 +8,7 @@ import '../../themes_colors/colors.dart';
 import '../app_permissions/app_permissions.dart';
 import '../custom_loader/custom_loader.dart';
 import '../custom_myco_button/custom_myco_button.dart';
-import 'custom_crop_images.dart';
+import 'custom_crop_images/custom_crop_images.dart';
 
 class GalleryPickerScreen extends StatefulWidget {
   final int maxSelection;
