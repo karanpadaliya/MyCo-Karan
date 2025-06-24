@@ -78,7 +78,7 @@ class _CustomCropImageScreenState extends State<CustomCropImageScreen> {
 
   Size? get _imageDisplaySize {
     final RenderBox? renderBox =
-        _imageContainerKey.currentContext?.findRenderObject() as RenderBox?;
+    _imageContainerKey.currentContext?.findRenderObject() as RenderBox?;
     return renderBox?.size;
   }
 
@@ -196,9 +196,9 @@ class _CustomCropImageScreenState extends State<CustomCropImageScreen> {
             imageToCropFromSize.height / displayedImageRectInUI.height;
 
         final double translatedCropLeft =
-            (cropRectFromUI.left - displayedImageRectInUI.left);
+        (cropRectFromUI.left - displayedImageRectInUI.left);
         final double translatedCropTop =
-            (cropRectFromUI.top - displayedImageRectInUI.top);
+        (cropRectFromUI.top - displayedImageRectInUI.top);
 
         finalCropSourceRect = Rect.fromLTWH(
           translatedCropLeft * scaleX,
@@ -345,11 +345,11 @@ class _CustomCropImageScreenState extends State<CustomCropImageScreen> {
 
         if (!_pendingCropRects.containsKey(_currentIndex)) {
           WidgetsBinding.instance.addPostFrameCallback(
-            (_) => _initializeCropRect(),
+                (_) => _initializeCropRect(),
           );
         } else {
           WidgetsBinding.instance.addPostFrameCallback(
-            (_) => _applyAspectRatio(),
+                (_) => _applyAspectRatio(),
           );
         }
       });
@@ -399,7 +399,7 @@ class _CustomCropImageScreenState extends State<CustomCropImageScreen> {
 
       if (shape == CropShape.circle) {
         final oneToOneRatio = _aspectRatios.firstWhere(
-          (ratio) => ratio.label == '1:1',
+              (ratio) => ratio.label == '1:1',
           orElse: () => _aspectRatios.first,
         );
         _selectedAspectRatio = oneToOneRatio;
@@ -557,9 +557,9 @@ class _CustomCropImageScreenState extends State<CustomCropImageScreen> {
                               Icon(
                                 ratio.icon,
                                 color:
-                                    isSelected
-                                        ? AppColors.white
-                                        : AppColors.white.withOpacity(0.7),
+                                isSelected
+                                    ? AppColors.white
+                                    : AppColors.white.withOpacity(0.7),
                               ),
                               const SizedBox(height: 4),
                               Text(
@@ -567,13 +567,13 @@ class _CustomCropImageScreenState extends State<CustomCropImageScreen> {
                                 style: TextStyle(
                                   fontSize: 12,
                                   color:
-                                      isSelected
-                                          ? AppColors.white
-                                          : AppColors.white.withOpacity(0.7),
+                                  isSelected
+                                      ? AppColors.white
+                                      : AppColors.white.withOpacity(0.7),
                                   fontWeight:
-                                      isSelected
-                                          ? FontWeight.bold
-                                          : FontWeight.normal,
+                                  isSelected
+                                      ? FontWeight.bold
+                                      : FontWeight.normal,
                                 ),
                               ),
                             ],
@@ -631,9 +631,9 @@ class _CustomCropImageScreenState extends State<CustomCropImageScreen> {
               icon,
               size: 24,
               color:
-                  isSelected
-                      ? AppColors.white
-                      : AppColors.white.withOpacity(0.3),
+              isSelected
+                  ? AppColors.white
+                  : AppColors.white.withOpacity(0.3),
             ),
             const SizedBox(height: 4),
             Text(
@@ -641,9 +641,9 @@ class _CustomCropImageScreenState extends State<CustomCropImageScreen> {
               style: TextStyle(
                 fontSize: 12,
                 color:
-                    isSelected
-                        ? AppColors.white
-                        : AppColors.white.withOpacity(0.3),
+                isSelected
+                    ? AppColors.white
+                    : AppColors.white.withOpacity(0.3),
               ),
             ),
           ],
@@ -690,12 +690,12 @@ class _CustomCropImageScreenState extends State<CustomCropImageScreen> {
                       ),
                       builder:
                           (context, snapshot) =>
-                              snapshot.hasData
-                                  ? Image.memory(
-                                    snapshot.data!,
-                                    fit: BoxFit.cover,
-                                  )
-                                  : Container(color: AppColors.secondary),
+                      snapshot.hasData
+                          ? Image.memory(
+                        snapshot.data!,
+                        fit: BoxFit.cover,
+                      )
+                          : Container(color: AppColors.secondary),
                     ),
                     if (hasChanges)
                       Positioned(
@@ -1023,10 +1023,10 @@ class _CropRectPainter extends CustomPainter {
 
   final Paint _backgroundPaint = Paint()..color = Colors.black.withOpacity(0.7);
   final Paint _borderPaint =
-      Paint()
-        ..color = AppColors.primary
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2.0;
+  Paint()
+    ..color = AppColors.primary
+    ..style = PaintingStyle.stroke
+    ..strokeWidth = 2.0;
   final Paint _handlePaint = Paint()..color = AppColors.white;
 
   _CropRectPainter({required this.rect, required this.shape});

@@ -85,7 +85,7 @@ class _CustomMediaPickerContainerState
               _pickedImages.length < widget.multipleImage
                   ? _pickedImages.length + 1
                   : _pickedImages.length,
-              (index) {
+                  (index) {
                 if (_pickedImages.length < widget.multipleImage &&
                     index == _pickedImages.length) {
                   return GestureDetector(
@@ -162,7 +162,7 @@ class _CustomMediaPickerContainerState
                   path.basename(pickedFile!.path),
                   style: TextStyle(
                     fontSize:
-                        AppTheme.lightTheme.textTheme.bodyLarge?.fontSize ?? 16,
+                    AppTheme.lightTheme.textTheme.bodyLarge?.fontSize ?? 16,
                     fontFamily: "Gilroy-Medium",
                     color: AppColors.titleColor,
                   ),
@@ -184,7 +184,7 @@ class _CustomMediaPickerContainerState
                     "Remove",
                     style: TextStyle(
                       fontSize:
-                          AppTheme.lightTheme.textTheme.bodyLarge?.fontSize ??
+                      AppTheme.lightTheme.textTheme.bodyLarge?.fontSize ??
                           14,
                       color: AppColors.error,
                     ),
@@ -221,7 +221,7 @@ class _CustomMediaPickerContainerState
                   widget.imageTitle,
                   style: TextStyle(
                     fontSize:
-                        AppTheme.lightTheme.textTheme.bodyLarge?.fontSize ?? 16,
+                    AppTheme.lightTheme.textTheme.bodyLarge?.fontSize ?? 16,
                     fontFamily: "Gilroy-SemiBold",
                     fontWeight: FontWeight.w400,
                     color: AppColors.titleColor,
@@ -259,19 +259,19 @@ class _CustomMediaPickerContainerState
         MaterialPageRoute(
           builder:
               (context) => GalleryPickerScreen(
-                maxSelection: remainingCount,
-                // isCropImage: false,
-                onSelectionDone: (List<dynamic> assets) async {
-                  List<File> files = [];
-                  for (final asset in assets) {
-                    final file = await asset.file;
-                    if (file != null) {
-                      files.add(file);
-                    }
-                  }
-                  Navigator.pop(context, files);
-                },
-              ),
+            maxSelection: remainingCount,
+            // isCropImage: false,
+            onSelectionDone: (List<dynamic> assets) async {
+              List<File> files = [];
+              for (final asset in assets) {
+                final file = await asset.file;
+                if (file != null) {
+                  files.add(file);
+                }
+              }
+              Navigator.pop(context, files);
+            },
+          ),
         ),
       );
     } else {

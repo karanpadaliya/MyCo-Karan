@@ -9,7 +9,7 @@ import '../../themes_colors/colors.dart';
 import '../app_permissions/app_permissions.dart';
 import '../custom_loader/custom_loader.dart';
 import '../custom_myco_button/custom_myco_button.dart';
-import 'custome_shadow_container.dart';
+import 'custom_shadow_container.dart';
 import 'gallery_picker_screen.dart';
 
 Future<List<File>?> showMediaFilePicker({

@@ -7,7 +7,7 @@ class CustomLoader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        const ModalBarrier(dismissible: false, color: Colors.black38),
+        // const ModalBarrier(dismissible: false, color: Colors.white),
         Center(
           child: Container(
             padding: const EdgeInsets.all(10),
@@ -16,7 +16,7 @@ class CustomLoader extends StatelessWidget {
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black26,
+                  // color: Colors.black26,
                   blurRadius: 10,
                   offset: Offset(0, 4),
                 ),

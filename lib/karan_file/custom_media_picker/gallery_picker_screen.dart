@@ -46,7 +46,7 @@ class _GalleryPickerScreenState extends State<GalleryPickerScreen> {
 
     _scrollController.addListener(() {
       if (_scrollController.position.pixels >=
-              _scrollController.position.maxScrollExtent - 300 &&
+          _scrollController.position.maxScrollExtent - 300 &&
           !_isFetchingMore) {
         _isFetchingMore = true;
         _loadGallery(context, isInitial: false);
@@ -55,9 +55,9 @@ class _GalleryPickerScreenState extends State<GalleryPickerScreen> {
   }
 
   Future<void> _loadGallery(
-    BuildContext context, {
-    bool isInitial = true,
-  }) async {
+      BuildContext context, {
+        bool isInitial = true,
+      }) async {
     if (isInitial) _isLoading.value = true;
 
     bool hasPermission = await PermissionUtil.checkPermissionByPickerType(
@@ -126,10 +126,10 @@ class _GalleryPickerScreenState extends State<GalleryPickerScreen> {
 
     final validFiles = validationResult['validFiles'] as List<File>;
     final invalidFiles =
-        validationResult['invalidFiles'] as List<Map<String, dynamic>>;
+    validationResult['invalidFiles'] as List<Map<String, dynamic>>;
 
     final validAssets =
-        validFiles.map((f) => fileToAsset[f]).whereType<AssetEntity>().toList();
+    validFiles.map((f) => fileToAsset[f]).whereType<AssetEntity>().toList();
 
     if (invalidFiles.isNotEmpty && validAssets.isNotEmpty) {
       _showInvalidFilesBottomSheet(invalidFiles, validAssets);
@@ -158,15 +158,15 @@ class _GalleryPickerScreenState extends State<GalleryPickerScreen> {
   }
 
   void _showInvalidFilesBottomSheet(
-    List<Map<String, dynamic>> invalidFiles,
-    List<AssetEntity> validAssets,
-  ) {
+      List<Map<String, dynamic>> invalidFiles,
+      List<AssetEntity> validAssets,
+      ) {
     if (!mounted) return;
 
     _GalleryPickerBottomSheet.showInvalidFilesBottomSheet(
       context,
       invalidFiles,
-      () {
+          () {
         if (validAssets.isNotEmpty) {
           _handleValidAssets(validAssets);
         }
@@ -218,16 +218,16 @@ class _GalleryPickerScreenState extends State<GalleryPickerScreen> {
             builder: (context, selected, _) {
               return TextButton(
                 onPressed:
-                    selected.isNotEmpty
-                        ? () => _validateAndSubmitSelection(selected)
-                        : null,
+                selected.isNotEmpty
+                    ? () => _validateAndSubmitSelection(selected)
+                    : null,
                 child: Text(
                   'Done',
                   style: TextStyle(
                     color:
-                        selected.isNotEmpty
-                            ? Colors.white
-                            : Colors.white.withOpacity(0.5),
+                    selected.isNotEmpty
+                        ? Colors.white
+                        : Colors.white.withOpacity(0.5),
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
                   ),
@@ -277,9 +277,9 @@ class _GalleryPickerScreenState extends State<GalleryPickerScreen> {
                             padding: const EdgeInsets.all(6),
                             decoration: BoxDecoration(
                               color:
-                                  isSelected
-                                      ? AppColors.primary
-                                      : Colors.white.withOpacity(0.7),
+                              isSelected
+                                  ? AppColors.primary
+                                  : Colors.white.withOpacity(0.7),
                               shape: BoxShape.circle,
                               border: Border.all(
                                 color: AppColors.primary,
@@ -291,7 +291,7 @@ class _GalleryPickerScreenState extends State<GalleryPickerScreen> {
                                   ? Icons.check
                                   : Icons.radio_button_unchecked,
                               color:
-                                  isSelected ? Colors.white : AppColors.primary,
+                              isSelected ? Colors.white : AppColors.primary,
                               size: 14,
                             ),
                           ),
@@ -336,10 +336,10 @@ Future<Map<String, dynamic>> validateAndHandleImages({
 // Helper bottom sheet UI
 class _GalleryPickerBottomSheet {
   static void showInvalidFilesBottomSheet(
-    BuildContext context,
-    List<Map<String, dynamic>> invalidFiles,
-    VoidCallback onProceedWithValid,
-  ) {
+      BuildContext context,
+      List<Map<String, dynamic>> invalidFiles,
+      VoidCallback onProceedWithValid,
+      ) {
     if (invalidFiles.isEmpty) return;
 
     showModalBottomSheet(
@@ -391,52 +391,52 @@ class _GalleryPickerBottomSheet {
                             spacing: 12,
                             runSpacing: 12,
                             children:
-                                invalidFiles.map((item) {
-                                  final File file = item['file'];
-                                  final String reason = item['reason'];
-                                  return Container(
-                                    width: 100,
-                                    padding: const EdgeInsets.all(6),
-                                    decoration: BoxDecoration(
-                                      border: Border.all(
-                                        color: AppColors.borderColor,
+                            invalidFiles.map((item) {
+                              final File file = item['file'];
+                              final String reason = item['reason'];
+                              return Container(
+                                width: 100,
+                                padding: const EdgeInsets.all(6),
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                    color: AppColors.borderColor,
+                                  ),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Column(
+                                  children: [
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(
+                                        8,
                                       ),
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: Column(
-                                      children: [
-                                        ClipRRect(
-                                          borderRadius: BorderRadius.circular(
-                                            8,
-                                          ),
-                                          child: Image.file(
-                                            file,
-                                            width: 88,
-                                            height: 88,
-                                            fit: BoxFit.cover,
-                                            errorBuilder:
-                                                (_, __, ___) => const Icon(
-                                                  Icons.broken_image,
-                                                  size: 40,
-                                                ),
-                                          ),
+                                      child: Image.file(
+                                        file,
+                                        width: 88,
+                                        height: 88,
+                                        fit: BoxFit.cover,
+                                        errorBuilder:
+                                            (_, __, ___) => const Icon(
+                                          Icons.broken_image,
+                                          size: 40,
                                         ),
-                                        const SizedBox(height: 6),
-                                        Text(
-                                          reason == 'format'
-                                              ? 'due to .webp'
-                                              : 'due to size',
-                                          style: const TextStyle(
-                                            color: Colors.red,
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                          textAlign: TextAlign.center,
-                                        ),
-                                      ],
+                                      ),
                                     ),
-                                  );
-                                }).toList(),
+                                    const SizedBox(height: 6),
+                                    Text(
+                                      reason == 'format'
+                                          ? 'due to .webp'
+                                          : 'due to size',
+                                      style: const TextStyle(
+                                        color: Colors.red,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }).toList(),
                           ),
                         ),
                       ),
