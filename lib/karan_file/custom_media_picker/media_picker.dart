@@ -36,7 +36,7 @@ Future<List<File>?> showMediaFilePicker({
                       backgroundColor: AppColors.white,
                       content: _MediaFilePickerWidget(
                         isCameraShow: isCameraShow,
-                        isGallaryShow: isGallaryShow,
+                        isGalleryShow: isGallaryShow,
                         isDocumentShow: isDocumentShow,
                         onLoading: (val) => setState(() => _isLoading = val),
                         maxCount: maxCount,
@@ -137,7 +137,7 @@ class _AnimatedBottomSheetState extends State<_AnimatedBottomSheet>
                 ),
                 child: _MediaFilePickerWidget(
                   isCameraShow: widget.isCameraShow,
-                  isGallaryShow: widget.isGallaryShow,
+                  isGalleryShow: widget.isGallaryShow,
                   isDocumentShow: widget.isDocumentShow,
                   onLoading: _setLoading,
                   maxCount: widget.maxCount,
@@ -159,21 +159,21 @@ class _AnimatedBottomSheetState extends State<_AnimatedBottomSheet>
 
 class _MediaFilePickerWidget extends StatefulWidget {
   final bool isCameraShow;
-  final bool isGallaryShow;
+  final bool isGalleryShow;
   final bool isDocumentShow;
   final int maxCount;
   final bool isCropImage;
   final void Function(bool)? onLoading;
 
   const _MediaFilePickerWidget({
-    Key? key,
+    super.key,
     this.isCameraShow = false,
-    this.isGallaryShow = false,
+    this.isGalleryShow = false,
     this.isDocumentShow = false,
     this.onLoading,
     this.maxCount = 5,
     this.isCropImage = false,
-  }) : super(key: key);
+  });
 
   @override
   State<_MediaFilePickerWidget> createState() => _MediaFilePickerWidgetState();
@@ -210,7 +210,7 @@ class _MediaFilePickerWidgetState extends State<_MediaFilePickerWidget> {
                     ),
                   ),
                 if (widget.isCameraShow) const SizedBox(width: 20),
-                if (widget.isGallaryShow)
+                if (widget.isGalleryShow)
                   GestureDetector(
                     onTap: () => _pickImage(ImageSource.gallery),
                     child: CustomShadowContainer(
@@ -218,7 +218,7 @@ class _MediaFilePickerWidgetState extends State<_MediaFilePickerWidget> {
                       title: 'Gallery',
                     ),
                   ),
-                if (widget.isGallaryShow) const SizedBox(width: 20),
+                if (widget.isGalleryShow) const SizedBox(width: 20),
                 if (widget.isDocumentShow)
                   GestureDetector(
                     onTap: _pickDocument,
