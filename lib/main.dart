@@ -29,129 +29,129 @@ class _MyAppState extends State<MyApp> {
   }
 }
 
-class ImageGridPreviewWidget extends StatelessWidget {
-  final List<String> imageList;
-  final double? boxHeight;
-  final double? boxWidth;
-  final bool showIndicators;
-
-  const ImageGridPreviewWidget({
-    super.key,
-    required this.imageList,
-    this.boxHeight,
-    this.boxWidth,
-    this.showIndicators = true,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return _buildStyledImageRow(context, imageList);
-  }
-
-  Widget _buildStyledImageRow(BuildContext context, List<String> images) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        if (images.isNotEmpty) _imageBox(context, images, 0),
-        if (images.length > 1) ...[
-          const SizedBox(width: 12),
-          _imageBox(context, images, 1),
-        ],
-        if (images.length > 2) ...[
-          const SizedBox(width: 12),
-          _imageBox(context, images, 2),
-        ],
-      ],
-    );
-  }
-
-  Widget _imageBox(
-    BuildContext context,
-    List<String> images,
-    int index,
-    //   {
-    //   // bool isExtraBox = false,
-    // }
-  ) {
-    final total = images.length;
-    final height = boxHeight ?? MediaQuery.of(context).size.width * 0.20;
-    final width = boxWidth ?? MediaQuery.of(context).size.width * 0.20;
-
-    bool showImage = index < total;
-    bool isThirdBox = index == 2;
-    bool showExtraCountOverlay = isThirdBox && total > 3;
-    int extraCount = total - 2;
-
-    ImageProvider? backgroundImage;
-    if (showExtraCountOverlay && total > 3) {
-      backgroundImage = _getImageProvider(images[2]);
-    } else if (showImage) {
-      backgroundImage = _getImageProvider(images[index]);
-    }
-
-    return GestureDetector(
-      onTap: () {
-        if (showImage) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder:
-                  (_) => _ImagePreview(
-                    images: images,
-                    startIndex: index,
-                    showIndicators: showIndicators,
-                  ),
-            ),
-          );
-        }
-      },
-      child: Container(
-        width: width,
-        height: height,
-        decoration: BoxDecoration(
-          color: Colors.grey.shade300,
-          borderRadius: BorderRadius.circular(16),
-          image:
-              backgroundImage != null
-                  ? DecorationImage(
-                    image: backgroundImage,
-                    fit: BoxFit.cover,
-                    colorFilter:
-                        showExtraCountOverlay
-                            ? ColorFilter.mode(
-                              Color.fromRGBO(0, 0, 0, 0.4),
-                              BlendMode.darken,
-                            )
-                            : null,
-                  )
-                  : null,
-        ),
-        alignment: Alignment.center,
-        child:
-            showExtraCountOverlay
-                ? Text(
-                  '+$extraCount',
-                  style: TextStyle(
-                    // fontWeight: FontWeight.bold,
-                    fontSize:
-                        Theme.of(context).textTheme.titleLarge?.fontSize ?? 20,
-                    fontFamily: 'Gilroy-SemiBold',
-                    color: Colors.white,
-                  ),
-                )
-                : null,
-      ),
-    );
-  }
-
-  ImageProvider _getImageProvider(String path) {
-    if (path.startsWith('http://') || path.startsWith('https://')) {
-      return NetworkImage(path);
-    } else {
-      return AssetImage(path);
-    }
-  }
-}
+// class ImageGridPreviewWidget extends StatelessWidget {
+//   final List<String> imageList;
+//   final double? boxHeight;
+//   final double? boxWidth;
+//   final bool showIndicators;
+//
+//   const ImageGridPreviewWidget({
+//     super.key,
+//     required this.imageList,
+//     this.boxHeight,
+//     this.boxWidth,
+//     this.showIndicators = true,
+//   });
+//
+//   // @override
+//   // Widget build(BuildContext context) {
+//   //   return _buildStyledImageRow(context, imageList);
+//   // }
+//
+//   // Widget _buildStyledImageRow(BuildContext context, List<String> images) {
+//   //   return Row(
+//   //     mainAxisSize: MainAxisSize.min,
+//   //     children: [
+//   //       if (images.isNotEmpty) _imageBox(context, images, 0),
+//   //       if (images.length > 1) ...[
+//   //         const SizedBox(width: 12),
+//   //         _imageBox(context, images, 1),
+//   //       ],
+//   //       if (images.length > 2) ...[
+//   //         const SizedBox(width: 12),
+//   //         _imageBox(context, images, 2),
+//   //       ],
+//   //     ],
+//   //   );
+//   // }
+//
+//   Widget _imageBox(
+//     BuildContext context,
+//     List<String> images,
+//     int index,
+//     //   {
+//     //   // bool isExtraBox = false,
+//     // }
+//   ) {
+//     final total = images.length;
+//     final height = boxHeight ?? MediaQuery.of(context).size.width * 0.20;
+//     final width = boxWidth ?? MediaQuery.of(context).size.width * 0.20;
+//
+//     bool showImage = index < total;
+//     bool isThirdBox = index == 2;
+//     bool showExtraCountOverlay = isThirdBox && total > 3;
+//     int extraCount = total - 2;
+//
+//     ImageProvider? backgroundImage;
+//     if (showExtraCountOverlay && total > 3) {
+//       backgroundImage = _getImageProvider(images[2]);
+//     } else if (showImage) {
+//       backgroundImage = _getImageProvider(images[index]);
+//     }
+//
+//     return GestureDetector(
+//       onTap: () {
+//         if (showImage) {
+//           Navigator.push(
+//             context,
+//             MaterialPageRoute(
+//               builder:
+//                   (_) => _ImagePreview(
+//                     images: images,
+//                     startIndex: index,
+//                     showIndicators: showIndicators,
+//                   ),
+//             ),
+//           );
+//         }
+//       },
+//       child: Container(
+//         width: width,
+//         height: height,
+//         decoration: BoxDecoration(
+//           color: Colors.grey.shade300,
+//           borderRadius: BorderRadius.circular(16),
+//           image:
+//               backgroundImage != null
+//                   ? DecorationImage(
+//                     image: backgroundImage,
+//                     fit: BoxFit.cover,
+//                     colorFilter:
+//                         showExtraCountOverlay
+//                             ? ColorFilter.mode(
+//                               Color.fromRGBO(0, 0, 0, 0.4),
+//                               BlendMode.darken,
+//                             )
+//                             : null,
+//                   )
+//                   : null,
+//         ),
+//         alignment: Alignment.center,
+//         child:
+//             showExtraCountOverlay
+//                 ? Text(
+//                   '+$extraCount',
+//                   style: TextStyle(
+//                     // fontWeight: FontWeight.bold,
+//                     fontSize:
+//                         Theme.of(context).textTheme.titleLarge?.fontSize ?? 20,
+//                     fontFamily: 'Gilroy-SemiBold',
+//                     color: Colors.white,
+//                   ),
+//                 )
+//                 : null,
+//       ),
+//     );
+//   }
+//
+//   ImageProvider _getImageProvider(String path) {
+//     if (path.startsWith('http://') || path.startsWith('https://')) {
+//       return NetworkImage(path);
+//     } else {
+//       return AssetImage(path);
+//     }
+//   }
+// }
 
 ///image preview widget
 class _ImagePreview extends StatefulWidget {
