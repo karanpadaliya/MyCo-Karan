@@ -36,21 +36,6 @@ class _HomePageState extends State<HomePage> {
   File? _pickedImage;
   File? pickedFile;
 
-  // // For Stepper
-  // final steps = [
-  //   StepData(title: 'PENDING', status: StepStatus.pending),
-  //   StepData(title: 'APPROVED', status: StepStatus.approved),
-  //   StepData(
-  //     title: 'COMPLETED',
-  //     status: StepStatus.completed,
-  //     date: '21st May, 2025',
-  //     remark: 'Done',
-  //   ),
-  //   StepData(title: 'AUTHORIZED', status: StepStatus.pending),
-  //   StepData(title: 'AUTHORIZED', status: StepStatus.approved),
-  //   StepData(title: 'AUTHORIZED', status: StepStatus.authorized),
-  // ];
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -64,10 +49,55 @@ class _HomePageState extends State<HomePage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Padding(
-              //   padding: const EdgeInsets.all(20),
-              //   child: CustomStepper(steps: steps, isHorizontal: false),
-              // ),
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: CustomStepper(
+                  steps: [
+                    StepData(
+                      title: 'PENDING',
+                      status: StepStatus.pending,
+                      statusColor: const Color(0xffFDB913),
+                      titleColor: const Color(0xffFDB913),
+                    ),
+                    StepData(
+                      title: 'APPROVED',
+                      status: StepStatus.approved,
+                      statusColor: const Color(0xff2FBBA4),
+                      titleColor: const Color(0xff2FBBA4),
+                    ),
+                    StepData(
+                      title: 'COMPLETED',
+                      status: StepStatus.completed,
+                      statusColor: const Color(0xff2FBBA4),
+                      titleColor: const Color(0xff2FBBA4),
+                      details: [
+                        {'title': 'Date', 'description': '21st May, 2025'},
+                        {'title': 'Remark', 'description': 'Done'},
+                      ],
+                    ),
+                    StepData(
+                      title: 'AUTHORIZED',
+                      status: StepStatus.authorized,
+                      statusColor: const Color(0xff2FBBA4),
+                      titleColor: const Color(0xff2FBBA4),
+                    ),
+                    StepData(
+                      title: 'DENIED',
+                      status: StepStatus.denied,
+                      statusColor: const Color(0xffFF2121),
+                      titleColor: const Color(0xffFF2121),
+                      details: [
+                        {'title': 'Date', 'description': '21st May, 2025'},
+                        {
+                          'title': 'Completion Remark',
+                          'description': 'On Time',
+                        },
+                        {'title': 'Remark', 'description': 'Done'},
+                      ],
+                    ),
+                  ],
+                ),
+              ),
               SizedBox(height: 100, width: 100, child: CustomLoader()),
               const SizedBox(height: 40),
               CustomTimer(
