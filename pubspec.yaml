@@ -79,6 +79,7 @@ flutter:
     - assets/
     - assets/travelmodeicon/
     - assets/loader/
+    - assets/stepper_icon/
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

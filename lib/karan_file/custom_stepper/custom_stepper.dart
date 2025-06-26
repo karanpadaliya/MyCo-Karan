@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:myco_karan/karan_file/custom_inner_shadow.dart';
 import 'package:myco_karan/themes_colors/colors.dart';
 
 enum StepStatus { pending, approved, completed, denied, authorized }
@@ -42,120 +43,139 @@ class CustomStepper extends StatelessWidget {
     this.globalStatus,
   });
 
-  /// Returns icon based on StepStatus (always based on individual step.status)
-  IconData getIconForStatus(StepStatus status) {
+  StepStatus? get effectiveGlobalStatus =>
+      globalStatus ?? (steps.isNotEmpty ? steps.last.status : null);
+
+  Widget getIconWidgetForStatus(StepStatus status) {
     switch (status) {
       case StepStatus.approved:
       case StepStatus.completed:
-        return Icons.check;
+        return Image.asset(
+          'assets/stepper_icon/check.png',
+          height: 17,
+          width: 17,
+          color: AppColors.white,
+        );
       case StepStatus.denied:
-        return Icons.close;
+        return Icon(Icons.close, color: AppColors.white, size: 17);
       case StepStatus.authorized:
-        return Icons.lock_outline;
+        return Icon(Icons.lock_outline, color: AppColors.white, size: 17);
       case StepStatus.pending:
-        return Icons.hourglass_top;
+        return Icon(Icons.hourglass_top, color: AppColors.white, size: 17);
     }
   }
 
-  /// Returns default color based on status
   Color getColorForStatus(StepStatus status) {
     switch (status) {
       case StepStatus.completed:
       case StepStatus.approved:
-        return const Color(0xff2FBBA4); // Green
+        return const Color(0xff2FBBA4);
       case StepStatus.pending:
-        return const Color(0xffFDB913); // Yellow
+        return const Color(0xffFDB913);
       case StepStatus.denied:
-        return const Color(0xffFF2121); // Red
+        return const Color(0xffFF2121);
       case StepStatus.authorized:
-        return Colors.grey; // Gray
+        return const Color(0xff2FBBA4);
     }
   }
 
-  /// Builds the circle with icon
-  Widget _buildCircle(StepData step) {
-    final icon = getIconForStatus(
-      step.status,
-    ); // Always use step.status for icon
-    final baseColor =
-        globalStatus != null
-            ? getColorForStatus(globalStatus!)
+  Widget _buildCircle(StepData step, int index) {
+    final color =
+        step.isStepDisabled
+            ? Colors.grey
+            : effectiveGlobalStatus != null
+            ? getColorForStatus(effectiveGlobalStatus!)
             : step.statusColor ?? getColorForStatus(step.status);
 
-    final color = step.isStepDisabled ? Colors.grey : baseColor;
-
     return Stack(
+      alignment: Alignment.center,
       children: [
-        Container(
-          width: 40,
+        InnerShadowContainer(
           height: 40,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(color: Colors.grey.shade300, width: 0.5),
-            boxShadow: const [
-              BoxShadow(color: Colors.black26),
-              BoxShadow(
-                color: Colors.white,
-                blurRadius: 5,
-                offset: Offset(3, 3),
-              ),
-            ],
-          ),
+          width: 40,
+          borderRadius: 20,
+          backgroundColor: AppColors.white,
+          isShadowTopLeft: true,
         ),
-        Positioned(
-          top: 6,
-          left: 6,
-          child: Container(
-            height: 30,
-            width: 30,
-            decoration: BoxDecoration(shape: BoxShape.circle, color: color),
-            child:
-                step.isStepIconShow
-                    ? Center(
-                      child: Icon(icon, color: AppColors.white, size: 20),
-                    )
-                    : null,
-          ),
+        InnerShadowContainer(
+          height: 30,
+          width: 30,
+          borderRadius: 15,
+          backgroundColor: color,
+          isShadowBottomLeft: true,
+          child:
+              step.isStepIconShow
+                  ? Center(child: getIconWidgetForStatus(step.status))
+                  : const SizedBox.shrink(),
         ),
       ],
     );
   }
 
-  /// Builds the connector line
-  Widget _buildLine() {
-    final color =
-        globalStatus != null
-            ? getColorForStatus(globalStatus!)
+  Widget _buildLine(int index) {
+    final bool isNextStepDisabled =
+        (index + 1 < steps.length) && steps[index + 1].isStepDisabled;
+
+    final Color color =
+        isNextStepDisabled
+            ? const Color(0xffA9A3A3)
+            : effectiveGlobalStatus != null
+            ? getColorForStatus(effectiveGlobalStatus!)
             : const Color(0xffA9A3A3);
 
-    return Container(width: isHorizontal ? 60 : 3, height: 30, color: color);
+    return isHorizontal
+        ? Container(
+          width: 10, // ✅ fixed width instead of Expanded
+          height: 3,
+          color: color,
+        )
+        : Container(width: 3, height: 50, color: color);
   }
 
-  /// Builds each step
   Widget _buildStep(BuildContext context, StepData step, int index) {
     final isLast = index == steps.length - 1;
     final titleColor =
         step.isStepDisabled
             ? Colors.grey
-            : globalStatus != null
-            ? getColorForStatus(globalStatus!)
+            : effectiveGlobalStatus != null
+            ? getColorForStatus(effectiveGlobalStatus!)
             : step.titleColor ?? getColorForStatus(step.status);
-
     if (isHorizontal) {
-      return Row(
+      return Column(
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.center,
-        children: [_buildCircle(step), if (!isLast) _buildLine()],
+        children: [
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildCircle(step, index),
+              if (!isLast) _buildLine(index), // this now works as expected
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            step.title,
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              fontFamily: 'Gilroy-SemiBold',
+              color: titleColor,
+            ),
+          ),
+        ],
       );
     }
-
     return IntrinsicHeight(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Column(
             children: [
-              _buildCircle(step),
-              if (!isLast) Expanded(child: _buildLine()),
+              _buildCircle(step, index),
+              if (!isLast) Expanded(child: _buildLine(index)),
             ],
           ),
           const SizedBox(width: 12),
@@ -187,8 +207,6 @@ class CustomStepper extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children:
                             step.details!.map((item) {
-                              final title = item.title;
-                              final description = item.description;
                               return Padding(
                                 padding: const EdgeInsets.only(bottom: 6),
                                 child: Row(
@@ -197,7 +215,7 @@ class CustomStepper extends StatelessWidget {
                                     SizedBox(
                                       width: 140,
                                       child: Text(
-                                        title,
+                                        item.title,
                                         style: const TextStyle(
                                           fontSize: 12,
                                           fontFamily: 'Gilroy-SemiBold',
@@ -214,7 +232,7 @@ class CustomStepper extends StatelessWidget {
                                     ),
                                     Expanded(
                                       child: Text(
-                                        description,
+                                        item.description,
                                         style: const TextStyle(
                                           fontSize: 12,
                                           fontFamily: 'Gilroy-Medium',
@@ -236,16 +254,22 @@ class CustomStepper extends StatelessWidget {
     );
   }
 
-  /// Builds the full stepper layout
   @override
   Widget build(BuildContext context) {
     return isHorizontal
-        ? SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: List.generate(
-              steps.length,
-              (index) => _buildStep(context, steps[index], index),
+        ? SizedBox(
+          height: 100,
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: List.generate(
+                steps.length,
+                (index) => Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: _buildStep(context, steps[index], index),
+                ),
+              ),
             ),
           ),
         )

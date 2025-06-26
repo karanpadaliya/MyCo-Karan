@@ -49,73 +49,61 @@ class _HomePageState extends State<HomePage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              const Text(
+                'Vertical Stepper (Individual Step Status)',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 20),
               Padding(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(10.0),
                 child: CustomStepper(
-                  // isHorizontal: true,
                   steps: [
                     StepData(
-                      title: 'PENDING',
-                      status: StepStatus.pending,
-                      statusColor: const Color(0xffFDB913),
-                      titleColor: const Color(0xffFDB913),
-                      isStepIconShow: false,
-                    ),
-                    StepData(
-                      title: 'APPROVED',
-                      status: StepStatus.approved,
-                      statusColor: const Color(0xff2FBBA4),
-                      titleColor: const Color(0xff2FBBA4),
-                      // isStepDisabled: true,
-                    ),
-                    StepData(
-                      title: 'COMPLETED',
+                      title: 'Order Placed',
                       status: StepStatus.completed,
-                      statusColor: const Color(0xff2FBBA4),
-                      titleColor: const Color(0xff2FBBA4),
+                      details: [
+                        StepDetail(title: 'Date', description: '2023-01-15'),
+                        StepDetail(title: 'Time', description: '10:00 AM'),
+                      ],
+                    ),
+                    StepData(
+                      title: 'Processing',
+                      status: StepStatus.pending,
+                      details: [
+                        StepDetail(
+                          title: 'Estimated Completion',
+                          description: '24-48 hours',
+                        ),
+                      ],
+                    ),
+                    StepData(
+                      title: 'Shipped',
+                      status: StepStatus.approved,
+                      isStepDisabled: false,
+                      details: [
+                        StepDetail(
+                          title: 'Tracking ID',
+                          description: 'XYZ12345',
+                        ),
+                      ],
+                    ),
+                    StepData(
+                      title: 'Returned',
+                      status: StepStatus.denied,
                       // isStepDisabled: true,
                       details: [
                         StepDetail(
-                          title: 'Date',
-                          description: '21st May, 2025',
+                          title: 'Tracking ID',
+                          description: 'XYZ12345',
                         ),
-                        StepDetail(title: 'Remark', description: 'Done'),
-                      ],
-                    ),
-                    StepData(
-                      title: 'AUTHORIZED',
-                      status: StepStatus.authorized,
-                      statusColor: const Color(0xff2FBBA4),
-                      titleColor: const Color(0xff2FBBA4),
-                      details: [
-                        StepDetail(
-                          title: 'Date',
-                          description: '21st May, 2025',
-                        ),
-                        StepDetail(title: 'Remark', description: 'Done'),
-                      ],
-                    ),
-                    StepData(
-                      title: 'DENIED',
-                      status: StepStatus.denied,
-                      statusColor: const Color(0xffFF2121),
-                      titleColor: const Color(0xffFF2121),
-                      details: [
-                        StepDetail(
-                          title: 'Date',
-                          description: '21st May, 2025',
-                        ),
-                        StepDetail(
-                          title: 'Completion Remark',
-                          description: 'On Time',
-                        ),
-                        StepDetail(title: 'Remark', description: 'Done'),
                       ],
                     ),
                   ],
-                  globalStatus: StepStatus.approved,
+                  isHorizontal: true,
+                  // globalStatus: StepStatus.denied,
                 ),
               ),
+              const SizedBox(height: 40),
               SizedBox(height: 100, width: 100, child: CustomLoader()),
               const SizedBox(height: 40),
               CustomTimer(
