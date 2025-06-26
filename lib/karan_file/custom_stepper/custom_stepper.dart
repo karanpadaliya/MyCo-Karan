@@ -123,12 +123,14 @@ class CustomStepper extends StatelessWidget {
             ? getColorForStatus(effectiveGlobalStatus!)
             : const Color(0xffA9A3A3);
 
+    //   indent: 5,
+    //   endIndent: 10,
+    //   thickness: 3,
+    //   // height: 3,
+    //   color: color,
+    // )
     return isHorizontal
-        ? Container(
-          width: 10, // ✅ fixed width instead of Expanded
-          height: 3,
-          color: color,
-        )
+        ? Container(width: 50, height: 3, color: color)
         : Container(width: 3, height: 50, color: color);
   }
 
@@ -142,27 +144,38 @@ class CustomStepper extends StatelessWidget {
             : step.titleColor ?? getColorForStatus(step.status);
     if (isHorizontal) {
       return Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Row(
-            mainAxisSize: MainAxisSize.min,
+          Stack(
+            fit: StackFit.loose,
+            // mainAxisSize: MainAxisSize.min,
             children: [
-              _buildCircle(step, index),
-              if (!isLast) _buildLine(index), // this now works as expected
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                // crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  _buildCircle(step, index),
+                  if (!isLast) _buildLine(index),
+                ],
+              ),
             ],
           ),
+
           const SizedBox(height: 6),
-          Text(
-            step.title,
-            textAlign: TextAlign.center,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              fontFamily: 'Gilroy-SemiBold',
-              color: titleColor,
+          Positioned(
+            // top: 30,
+            left: -100,
+            bottom: 0,
+            child: Text(
+              step.title,
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                fontFamily: 'Gilroy-SemiBold',
+                color: titleColor,
+              ),
             ),
           ),
         ],
@@ -262,11 +275,11 @@ class CustomStepper extends StatelessWidget {
           child: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              // crossAxisAlignment: CrossAxisAlignment.start,
               children: List.generate(
                 steps.length,
                 (index) => Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 0),
                   child: _buildStep(context, steps[index], index),
                 ),
               ),
