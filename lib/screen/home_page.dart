@@ -52,27 +52,34 @@ class _HomePageState extends State<HomePage> {
               Padding(
                 padding: const EdgeInsets.all(20),
                 child: CustomStepper(
+                  // isHorizontal: true,
                   steps: [
                     StepData(
                       title: 'PENDING',
                       status: StepStatus.pending,
                       statusColor: const Color(0xffFDB913),
                       titleColor: const Color(0xffFDB913),
+                      isStepIconShow: false,
                     ),
                     StepData(
                       title: 'APPROVED',
                       status: StepStatus.approved,
                       statusColor: const Color(0xff2FBBA4),
                       titleColor: const Color(0xff2FBBA4),
+                      // isStepDisabled: true,
                     ),
                     StepData(
                       title: 'COMPLETED',
                       status: StepStatus.completed,
                       statusColor: const Color(0xff2FBBA4),
                       titleColor: const Color(0xff2FBBA4),
+                      // isStepDisabled: true,
                       details: [
-                        {'title': 'Date', 'description': '21st May, 2025'},
-                        {'title': 'Remark', 'description': 'Done'},
+                        StepDetail(
+                          title: 'Date',
+                          description: '21st May, 2025',
+                        ),
+                        StepDetail(title: 'Remark', description: 'Done'),
                       ],
                     ),
                     StepData(
@@ -80,6 +87,13 @@ class _HomePageState extends State<HomePage> {
                       status: StepStatus.authorized,
                       statusColor: const Color(0xff2FBBA4),
                       titleColor: const Color(0xff2FBBA4),
+                      details: [
+                        StepDetail(
+                          title: 'Date',
+                          description: '21st May, 2025',
+                        ),
+                        StepDetail(title: 'Remark', description: 'Done'),
+                      ],
                     ),
                     StepData(
                       title: 'DENIED',
@@ -87,15 +101,19 @@ class _HomePageState extends State<HomePage> {
                       statusColor: const Color(0xffFF2121),
                       titleColor: const Color(0xffFF2121),
                       details: [
-                        {'title': 'Date', 'description': '21st May, 2025'},
-                        {
-                          'title': 'Completion Remark',
-                          'description': 'On Time',
-                        },
-                        {'title': 'Remark', 'description': 'Done'},
+                        StepDetail(
+                          title: 'Date',
+                          description: '21st May, 2025',
+                        ),
+                        StepDetail(
+                          title: 'Completion Remark',
+                          description: 'On Time',
+                        ),
+                        StepDetail(title: 'Remark', description: 'Done'),
                       ],
                     ),
                   ],
+                  globalStatus: StepStatus.approved,
                 ),
               ),
               SizedBox(height: 100, width: 100, child: CustomLoader()),

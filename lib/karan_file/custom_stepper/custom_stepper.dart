@@ -3,12 +3,21 @@ import 'package:myco_karan/themes_colors/colors.dart';
 
 enum StepStatus { pending, approved, completed, denied, authorized }
 
+class StepDetail {
+  final String title;
+  final String description;
+
+  StepDetail({required this.title, required this.description});
+}
+
 class StepData {
   final String title;
   final StepStatus status;
-  final List<Map<String, String>>? details;
+  final List<StepDetail>? details;
   final Color? statusColor;
   final Color? titleColor;
+  final bool isStepDisabled;
+  final bool isStepIconShow;
 
   StepData({
     required this.title,
@@ -16,43 +25,64 @@ class StepData {
     this.details,
     this.statusColor,
     this.titleColor,
+    this.isStepDisabled = false,
+    this.isStepIconShow = true,
   });
 }
 
 class CustomStepper extends StatelessWidget {
   final List<StepData> steps;
   final bool isHorizontal;
+  final StepStatus? globalStatus;
 
   const CustomStepper({
     super.key,
     required this.steps,
     this.isHorizontal = false,
+    this.globalStatus,
   });
 
-  Widget _buildCircle(StepStatus status, {Color? customColor}) {
-    Color color;
-    IconData icon;
-
+  /// Returns icon based on StepStatus (always based on individual step.status)
+  IconData getIconForStatus(StepStatus status) {
     switch (status) {
       case StepStatus.approved:
       case StepStatus.completed:
-        color = Colors.green;
-        icon = Icons.check;
-        break;
+        return Icons.check;
       case StepStatus.denied:
-        color = Colors.red;
-        icon = Icons.close;
-        break;
+        return Icons.close;
       case StepStatus.authorized:
-        color = Colors.grey;
-        icon = Icons.lock_outline;
-        break;
-      default:
-        color = Colors.orange;
-        icon = Icons.hourglass_top;
+        return Icons.lock_outline;
+      case StepStatus.pending:
+        return Icons.hourglass_top;
     }
+  }
 
-    color = customColor ?? color;
+  /// Returns default color based on status
+  Color getColorForStatus(StepStatus status) {
+    switch (status) {
+      case StepStatus.completed:
+      case StepStatus.approved:
+        return const Color(0xff2FBBA4); // Green
+      case StepStatus.pending:
+        return const Color(0xffFDB913); // Yellow
+      case StepStatus.denied:
+        return const Color(0xffFF2121); // Red
+      case StepStatus.authorized:
+        return Colors.grey; // Gray
+    }
+  }
+
+  /// Builds the circle with icon
+  Widget _buildCircle(StepData step) {
+    final icon = getIconForStatus(
+      step.status,
+    ); // Always use step.status for icon
+    final baseColor =
+        globalStatus != null
+            ? getColorForStatus(globalStatus!)
+            : step.statusColor ?? getColorForStatus(step.status);
+
+    final color = step.isStepDisabled ? Colors.grey : baseColor;
 
     return Stack(
       children: [
@@ -79,33 +109,42 @@ class CustomStepper extends StatelessWidget {
             height: 30,
             width: 30,
             decoration: BoxDecoration(shape: BoxShape.circle, color: color),
-            child: Center(
-              child: Icon(icon, color: AppColors.white, size: 20),
-            ),
+            child:
+                step.isStepIconShow
+                    ? Center(
+                      child: Icon(icon, color: AppColors.white, size: 20),
+                    )
+                    : null,
           ),
         ),
       ],
     );
   }
 
-  Widget _buildLine(bool isActive) {
-    return Container(
-      width: isHorizontal ? 60 : 3,
-      height: 30,
-      color: isActive ? Colors.green : const Color(0xffA9A3A3),
-    );
+  /// Builds the connector line
+  Widget _buildLine() {
+    final color =
+        globalStatus != null
+            ? getColorForStatus(globalStatus!)
+            : const Color(0xffA9A3A3);
+
+    return Container(width: isHorizontal ? 60 : 3, height: 30, color: color);
   }
 
+  /// Builds each step
   Widget _buildStep(BuildContext context, StepData step, int index) {
     final isLast = index == steps.length - 1;
+    final titleColor =
+        step.isStepDisabled
+            ? Colors.grey
+            : globalStatus != null
+            ? getColorForStatus(globalStatus!)
+            : step.titleColor ?? getColorForStatus(step.status);
 
     if (isHorizontal) {
       return Row(
         crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          _buildCircle(step.status, customColor: step.statusColor),
-          if (!isLast) _buildLine(true),
-        ],
+        children: [_buildCircle(step), if (!isLast) _buildLine()],
       );
     }
 
@@ -115,9 +154,8 @@ class CustomStepper extends StatelessWidget {
         children: [
           Column(
             children: [
-              _buildCircle(step.status, customColor: step.statusColor),
-              if (!isLast && !isHorizontal)
-                Expanded(child: _buildLine(true)),
+              _buildCircle(step),
+              if (!isLast) Expanded(child: _buildLine()),
             ],
           ),
           const SizedBox(width: 12),
@@ -133,10 +171,7 @@ class CustomStepper extends StatelessWidget {
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                       fontFamily: 'Gilroy-SemiBold',
-                      color: step.titleColor ??
-                          (step.status == StepStatus.authorized
-                              ? Colors.grey
-                              : Colors.black),
+                      color: titleColor,
                     ),
                   ),
                   if (step.details != null && step.details!.isNotEmpty)
@@ -150,45 +185,46 @@ class CustomStepper extends StatelessWidget {
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: step.details!.map((item) {
-                          final title = item['title'] ?? '';
-                          final description = item['description'] ?? '';
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 6),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                SizedBox(
-                                  width: 120,
-                                  child: Text(
-                                    title,
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      fontFamily: 'Gilroy-SemiBold',
-                                      fontWeight: FontWeight.w600,
+                        children:
+                            step.details!.map((item) {
+                              final title = item.title;
+                              final description = item.description;
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 6),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    SizedBox(
+                                      width: 140,
+                                      child: Text(
+                                        title,
+                                        style: const TextStyle(
+                                          fontSize: 12,
+                                          fontFamily: 'Gilroy-SemiBold',
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
                                     ),
-                                  ),
-                                ),
-                                const Text(
-                                  ' : ',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontFamily: 'Gilroy-Medium',
-                                  ),
-                                ),
-                                Expanded(
-                                  child: Text(
-                                    description,
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      fontFamily: 'Gilroy-Medium',
+                                    const Text(
+                                      ' : ',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontFamily: 'Gilroy-Medium',
+                                      ),
                                     ),
-                                  ),
+                                    Expanded(
+                                      child: Text(
+                                        description,
+                                        style: const TextStyle(
+                                          fontSize: 12,
+                                          fontFamily: 'Gilroy-Medium',
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
-                          );
-                        }).toList(),
+                              );
+                            }).toList(),
                       ),
                     ),
                 ],
@@ -200,24 +236,25 @@ class CustomStepper extends StatelessWidget {
     );
   }
 
+  /// Builds the full stepper layout
   @override
   Widget build(BuildContext context) {
     return isHorizontal
         ? SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: List.generate(
-          steps.length,
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: List.generate(
+              steps.length,
               (index) => _buildStep(context, steps[index], index),
-        ),
-      ),
-    )
+            ),
+          ),
+        )
         : Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: List.generate(
-        steps.length,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: List.generate(
+            steps.length,
             (index) => _buildStep(context, steps[index], index),
-      ),
-    );
+          ),
+        );
   }
 }
