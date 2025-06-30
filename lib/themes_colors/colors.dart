@@ -19,7 +19,8 @@ class AppColors {
   static const Color onCancleBtn = Color(0xFFE0E0E0);
 
   //   Stepper color
-  static const Color stepperDisabled = Color(0xFF929292);
+  static const Color stepperDisabled = Color(0xFFCACACA);
+  static const Color stepperDisabledTitle = Color(0xFFAFA8A8);
   static const Color stepperPending = Color(0xFFFDB913);
   static const Color stepperDenied = Color(0xFFFF2121);
   static const Color stepperCompleted = Color(0xFF2FBBA4);

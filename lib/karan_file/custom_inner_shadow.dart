@@ -67,7 +67,7 @@ class InnerShadowContainer extends StatelessWidget {
             borderRadius: BorderRadius.circular(borderRadius),
             child: CustomPaint(
               painter: InnerShadowPainter(
-                shadowColor: Colors.black38,
+                shadowColor: Colors.black26,
                 blur: 4,
                 offset: const Offset(4, -3),
                 borderRadius: borderRadius,

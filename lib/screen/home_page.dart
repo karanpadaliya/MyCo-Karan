@@ -12,7 +12,7 @@ import '../jenil_file/myco_custom_tabbar.dart';
 import '../karan_file/custom_loader/custom_loader.dart';
 import '../karan_file/custom_media_picker/media_picker.dart';
 import '../karan_file/custom_myco_button/custom_myco_button.dart';
-import '../karan_file/custom_stepper/custom_stepper.dart';
+import '../karan_file/custom_vertical_stepper/custom_vertical_stepper.dart';
 import '../main.dart';
 import '../maulik_file/current_opening_card.dart';
 import '../maulik_file/ios_calendar_time_picker.dart';
@@ -23,6 +23,7 @@ import '../maulik_file/work_report_add_box.dart';
 import '../maulik_file/work_report_history_box.dart';
 import '../themes_colors/colors.dart';
 import '../tirth_file/custom_calender.dart';
+import '../tirth_file/status_timeline.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -54,48 +55,43 @@ class _HomePageState extends State<HomePage> {
                 child: CustomVerticalStepper(
                   steps: [
                     StepData(
-                      title: 'Order Placed',
-                      status: StepStatus.completed,
-                      details: [
-                        StepDetail(title: 'Date', description: '2023-01-15'),
-                        StepDetail(title: 'Time', description: '10:00 AM'),
-                      ],
-                    ),
-                    StepData(
-                      title: 'Processing',
+                      title: 'PUNCH IN',
+                      subTitle: '10:25:06 AM',
                       status: StepStatus.pending,
+                      // titleColor: Colors.yellow,
+                      // subTitleColor: Colors.red,
+                      // trailingTitleColor: Colors.red,
+                      // isStepIconShow: false,
                       details: [
                         StepDetail(
                           title: 'Completion Remark',
                           description: '24-48 hours',
                         ),
                       ],
-                    ),
-                    StepData(
-                      title: 'Shipped',
-                      status: StepStatus.approved,
-                      isStepDisabled: false,
-                      details: [
-                        StepDetail(
-                          title: 'Tracking ID',
-                          description: 'XYZ12345',
+                      subSteps: [
+                        SubStepData(
+                          title: 'Document Review',
+                          subTitle: 'Checking accuracy',
+                          trailingTitle: 'In Progress',
+                          status: StepStatus.pending,
+                          // isSubStepDisabled: true
+                          // isSubStepIconShow: false
+                          // isSubStepDisabled: true
+                          // statusColor: Colors.yellow
+                          // titleColor: Colors.red,
+                          // statusColor: Colors.red,
+                          // subTitleColor: Colors.red,
+                          // trailingTitleColor: Colors.red
                         ),
-                      ],
-                    ),
-                    StepData(
-                      title: 'Returned',
-                      status: StepStatus.completed,
-                      isStepDisabled: true,
-                      details: [
-                        StepDetail(
-                          title: 'Tracking ID',
-                          description: 'XYZ12345',
+                        SubStepData(
+                          title: 'Approval from Supervisor',
+                          subTitle: 'Awaiting confirmation',
+                          trailingTitle: 'Pending',
+                          status: StepStatus.approved,
                         ),
                       ],
                     ),
                   ],
-                  // isHorizontal: false,
-                  // globalStatus: StepStatus.denied,
                 ),
               ),
               const SizedBox(height: 40),
