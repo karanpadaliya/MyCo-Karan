@@ -17,4 +17,13 @@ class AppColors {
   static const Color imagePickerBg = Color(0xFFEEF7FD);
   static const Color textFieldColor = Color(0xFF101828);
   static const Color onCancleBtn = Color(0xFFE0E0E0);
+
+  //   Stepper color
+  static const Color stepperDisabled = Color(0xFF929292);
+  static const Color stepperPending = Color(0xFFFDB913);
+  static const Color stepperDenied = Color(0xFFFF2121);
+  static const Color stepperCompleted = Color(0xFF2FBBA4);
+  static const Color stepperAuthorized = Color(0xFF2FBBA4);
+  static const Color stepperApproved = Color(0xFF2FBBA4);
+  static const Color stepperDataBorder = Color(0xFF98A2B3);
 }

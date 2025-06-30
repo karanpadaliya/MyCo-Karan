@@ -49,14 +49,9 @@ class _HomePageState extends State<HomePage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
-                'Vertical Stepper (Individual Step Status)',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 20),
               Padding(
                 padding: const EdgeInsets.all(10.0),
-                child: CustomStepper(
+                child: CustomVerticalStepper(
                   steps: [
                     StepData(
                       title: 'Order Placed',
@@ -71,7 +66,7 @@ class _HomePageState extends State<HomePage> {
                       status: StepStatus.pending,
                       details: [
                         StepDetail(
-                          title: 'Estimated Completion',
+                          title: 'Completion Remark',
                           description: '24-48 hours',
                         ),
                       ],
@@ -89,8 +84,8 @@ class _HomePageState extends State<HomePage> {
                     ),
                     StepData(
                       title: 'Returned',
-                      status: StepStatus.denied,
-                      // isStepDisabled: true,
+                      status: StepStatus.completed,
+                      isStepDisabled: true,
                       details: [
                         StepDetail(
                           title: 'Tracking ID',
@@ -99,7 +94,7 @@ class _HomePageState extends State<HomePage> {
                       ],
                     ),
                   ],
-                  isHorizontal: true,
+                  // isHorizontal: false,
                   // globalStatus: StepStatus.denied,
                 ),
               ),

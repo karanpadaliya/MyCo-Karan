@@ -31,15 +31,16 @@ class StepData {
   });
 }
 
-class CustomStepper extends StatelessWidget {
+class CustomVerticalStepper extends StatelessWidget {
   final List<StepData> steps;
-  final bool isHorizontal;
+
+  // final bool isHorizontal;
   final StepStatus? globalStatus;
 
-  const CustomStepper({
+  const CustomVerticalStepper({
     super.key,
     required this.steps,
-    this.isHorizontal = false,
+    // this.isHorizontal = false,
     this.globalStatus,
   });
 
@@ -68,21 +69,22 @@ class CustomStepper extends StatelessWidget {
   Color getColorForStatus(StepStatus status) {
     switch (status) {
       case StepStatus.completed:
+        return AppColors.stepperCompleted;
       case StepStatus.approved:
-        return const Color(0xff2FBBA4);
+        return AppColors.stepperApproved;
       case StepStatus.pending:
-        return const Color(0xffFDB913);
+        return AppColors.stepperPending;
       case StepStatus.denied:
-        return const Color(0xffFF2121);
+        return AppColors.stepperDenied;
       case StepStatus.authorized:
-        return const Color(0xff2FBBA4);
+        return AppColors.stepperAuthorized;
     }
   }
 
   Widget _buildCircle(StepData step, int index) {
     final color =
         step.isStepDisabled
-            ? Colors.grey
+            ? AppColors.stepperDisabled
             : effectiveGlobalStatus != null
             ? getColorForStatus(effectiveGlobalStatus!)
             : step.statusColor ?? getColorForStatus(step.status);
@@ -118,10 +120,10 @@ class CustomStepper extends StatelessWidget {
 
     final Color color =
         isNextStepDisabled
-            ? const Color(0xffA9A3A3)
+            ? AppColors.stepperDisabled
             : effectiveGlobalStatus != null
             ? getColorForStatus(effectiveGlobalStatus!)
-            : const Color(0xffA9A3A3);
+            : AppColors.stepperDisabled;
 
     //   indent: 5,
     //   endIndent: 10,
@@ -129,58 +131,59 @@ class CustomStepper extends StatelessWidget {
     //   // height: 3,
     //   color: color,
     // )
-    return isHorizontal
-        ? Container(width: 50, height: 3, color: color)
-        : Container(width: 3, height: 50, color: color);
+    // return //isHorizontal
+    //     ? Container(width: 50, height: 3, color: color)
+    //     :
+    return Container(width: 3, height: 50, color: color);
   }
 
   Widget _buildStep(BuildContext context, StepData step, int index) {
     final isLast = index == steps.length - 1;
     final titleColor =
         step.isStepDisabled
-            ? Colors.grey
+            ? AppColors.stepperDisabled
             : effectiveGlobalStatus != null
             ? getColorForStatus(effectiveGlobalStatus!)
             : step.titleColor ?? getColorForStatus(step.status);
-    if (isHorizontal) {
-      return Column(
-        children: [
-          Stack(
-            fit: StackFit.loose,
-            // mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                // crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  _buildCircle(step, index),
-                  if (!isLast) _buildLine(index),
-                ],
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 6),
-          Positioned(
-            // top: 30,
-            left: -100,
-            bottom: 0,
-            child: Text(
-              step.title,
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                fontFamily: 'Gilroy-SemiBold',
-                color: titleColor,
-              ),
-            ),
-          ),
-        ],
-      );
-    }
+    // if (isHorizontal) {
+    //   return Column(
+    //     children: [
+    //       Stack(
+    //         fit: StackFit.loose,
+    //         // mainAxisSize: MainAxisSize.min,
+    //         children: [
+    //           Row(
+    //             mainAxisSize: MainAxisSize.min,
+    //             // crossAxisAlignment: CrossAxisAlignment.center,
+    //             children: [
+    //               _buildCircle(step, index),
+    //               if (!isLast) _buildLine(index),
+    //             ],
+    //           ),
+    //         ],
+    //       ),
+    //
+    //       const SizedBox(height: 6),
+    //       Positioned(
+    //         // top: 30,
+    //         left: -100,
+    //         bottom: 0,
+    //         child: Text(
+    //           step.title,
+    //           textAlign: TextAlign.center,
+    //           maxLines: 2,
+    //           overflow: TextOverflow.ellipsis,
+    //           style: TextStyle(
+    //             fontSize: 12,
+    //             fontWeight: FontWeight.w600,
+    //             fontFamily: 'Gilroy-SemiBold',
+    //             color: titleColor,
+    //           ),
+    //         ),
+    //       ),
+    //     ],
+    //   );
+    // }
     return IntrinsicHeight(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -213,7 +216,7 @@ class CustomStepper extends StatelessWidget {
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
                         color: const Color(0xffFAFAFF),
-                        border: Border.all(color: Colors.grey.shade300),
+                        border: Border.all(color: AppColors.stepperDataBorder),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Column(
@@ -240,15 +243,19 @@ class CustomStepper extends StatelessWidget {
                                       ' : ',
                                       style: TextStyle(
                                         fontSize: 12,
-                                        fontFamily: 'Gilroy-Medium',
+                                        fontFamily: 'Gilroy-SemiBold',
+                                        fontWeight: FontWeight.w600,
                                       ),
                                     ),
                                     Expanded(
-                                      child: Text(
-                                        item.description,
-                                        style: const TextStyle(
-                                          fontSize: 12,
-                                          fontFamily: 'Gilroy-Medium',
+                                      child: Padding(
+                                        padding: const EdgeInsets.only(left: 8),
+                                        child: Text(
+                                          item.description,
+                                          style: const TextStyle(
+                                            fontSize: 12,
+                                            fontFamily: 'Gilroy-Medium',
+                                          ),
                                         ),
                                       ),
                                     ),
@@ -269,29 +276,30 @@ class CustomStepper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return isHorizontal
-        ? SizedBox(
-          height: 100,
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              // crossAxisAlignment: CrossAxisAlignment.start,
-              children: List.generate(
-                steps.length,
-                (index) => Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 0),
-                  child: _buildStep(context, steps[index], index),
-                ),
-              ),
-            ),
-          ),
-        )
-        : Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: List.generate(
-            steps.length,
-            (index) => _buildStep(context, steps[index], index),
-          ),
-        );
+    // return isHorizontal
+    //     ? SizedBox(
+    //       height: 100,
+    //       child: SingleChildScrollView(
+    //         scrollDirection: Axis.horizontal,
+    //         child: Row(
+    //           // crossAxisAlignment: CrossAxisAlignment.start,
+    //           children: List.generate(
+    //             steps.length,
+    //             (index) => Padding(
+    //               padding: const EdgeInsets.symmetric(horizontal: 0),
+    //               child: _buildStep(context, steps[index], index),
+    //             ),
+    //           ),
+    //         ),
+    //       ),
+    //     )
+    //     :
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: List.generate(
+        steps.length,
+        (index) => _buildStep(context, steps[index], index),
+      ),
+    );
   }
 }
