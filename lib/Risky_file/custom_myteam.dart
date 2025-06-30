@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:myco_karan/themes_colors/colors.dart';
 
 class PersonData {
   final String firstName;
@@ -16,58 +17,58 @@ class PersonData {
 
 class OverlappingPeopleCard extends StatelessWidget {
   final List<PersonData> people;
-  final Color? cardbgr;
-  final OutlinedBorder? cardshape;
-  final double? cardelevation;
-  final EdgeInsetsGeometry? cardmargin;
-  final EdgeInsetsGeometry? cardpadding;
-  final double? cardheight;
-  final double? cardwidth;
-  final TextStyle? firstnamestyle;
-  final TextStyle? lastnamestyle;
-  final double? imageheight;
-  final double? imagewidth;
+  final Color? cardBgr;
+  final OutlinedBorder? cardShape;
+  final double? cardElevation;
+  final EdgeInsetsGeometry? cardMargin;
+  final EdgeInsetsGeometry? cardPadding;
+  final double? cardHeight;
+  final double? cardWidth;
+  final TextStyle? firstNameStyle;
+  final TextStyle? lastNameStyle;
+  final double? imageHeight;
+  final double? imageWidth;
   final Decoration? decoration;
-  final double? statusheight;
-  final double? statuswidth;
+  final double? statusHeight;
+  final double? statusWidth;
 
   const OverlappingPeopleCard(
       {super.key,
       required this.people,
-      this.cardbgr,
-      this.cardshape,
-      this.cardelevation,
-      this.cardmargin,
-      this.cardpadding,
-      this.cardheight,
-      this.cardwidth,
-      this.firstnamestyle,
-      this.lastnamestyle,
-      this.imageheight,
-      this.imagewidth,
+      this.cardBgr,
+      this.cardShape,
+      this.cardElevation,
+      this.cardMargin,
+      this.cardPadding,
+      this.cardHeight,
+      this.cardWidth,
+      this.firstNameStyle,
+      this.lastNameStyle,
+      this.imageHeight,
+      this.imageWidth,
       this.decoration,
-      this.statusheight,
-      this.statuswidth});
+      this.statusHeight,
+      this.statusWidth});
 
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: cardbgr ?? Colors.white,
-      shape: cardshape ??
+      color: cardBgr ?? Colors.white,
+      shape: cardShape ??
           RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
-              side: BorderSide(color: Colors.grey.shade400)),
-      elevation: cardelevation ?? 0,
-      margin: cardmargin ?? EdgeInsets.all(16),
+              side: BorderSide(color: AppColors.borderGrey)),
+      elevation: cardElevation ?? 0,
+      margin: cardMargin ?? EdgeInsets.all(16),
       child: Padding(
-        padding: cardpadding ?? EdgeInsets.all(16),
+        padding: cardPadding ?? EdgeInsets.all(16),
         child: Column(
           children: [
             // Centered overlapping avatars with names below
             Center(
               child: SizedBox(
-                height: cardheight ?? 145,
-                width: cardwidth ?? double.infinity,
+                height: cardHeight ?? 145,
+                width: cardWidth ?? double.infinity,
                 child: Stack(
                   clipBehavior: Clip.none,
                   children: List.generate(people.length, (index) {
@@ -75,14 +76,14 @@ class OverlappingPeopleCard extends StatelessWidget {
                     final Color statusColor =
                         person.isActive ? Color(0xFF1CE742) : Colors.red;
                     return Positioned(
-                      left: index * 77, // Controls horizontal overlap
+                      left: index * 75, // Controls horizontal overlap
                       child: Column(
                         children: [
                           Stack(
                             children: [
                               Container(
-                                width: imagewidth ?? 100,
-                                height: imageheight ?? 90,
+                                width: imageWidth ?? 100,
+                                height: imageHeight ?? 90,
                                 decoration: decoration ??
                                     BoxDecoration(
                                       shape: BoxShape.circle,
@@ -102,8 +103,8 @@ class OverlappingPeopleCard extends StatelessWidget {
                                 bottom: -3,
                                 right: 44,
                                 child: Container(
-                                  width: statusheight ?? 12,
-                                  height: statuswidth ?? 18,
+                                  width: statusHeight ?? 12,
+                                  height: statusWidth ?? 18,
                                   decoration: decoration ??
                                       BoxDecoration(
                                         color: statusColor,
@@ -121,7 +122,7 @@ class OverlappingPeopleCard extends StatelessWidget {
                               children: [
                                 Text(
                                   person.firstName,
-                                  style: firstnamestyle ??
+                                  style: firstNameStyle ??
                                       TextStyle(
                                         fontSize: 12,
                                         fontWeight: FontWeight.bold,
@@ -133,7 +134,7 @@ class OverlappingPeopleCard extends StatelessWidget {
                                 ),
                                 Text(
                                   person.lastName,
-                                  style: lastnamestyle ??
+                                  style: lastNameStyle ??
                                       TextStyle(
                                         fontSize: 12,
                                         color: Colors.black87,
