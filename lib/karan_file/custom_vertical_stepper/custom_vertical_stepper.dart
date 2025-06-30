@@ -257,8 +257,8 @@ class _MainStepWidget extends StatelessWidget {
                         Text(
                           step.trillingTitle!,
                           style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w600,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
                             fontFamily: 'Gilroy-Regular',
                             color: trailingColor,
                           ),

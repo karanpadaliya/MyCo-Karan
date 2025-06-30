@@ -50,6 +50,8 @@ class _HomePageState extends State<HomePage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              SizedBox(height: 10),
+              Text('Punch in-out Demo'),
               Padding(
                 padding: const EdgeInsets.all(10.0),
                 child: CustomVerticalStepper(
@@ -58,38 +60,37 @@ class _HomePageState extends State<HomePage> {
                       title: 'PUNCH IN',
                       subTitle: '10:25:06 AM',
                       status: StepStatus.pending,
-                      // titleColor: Colors.yellow,
-                      // subTitleColor: Colors.red,
-                      // trailingTitleColor: Colors.red,
-                      // isStepIconShow: false,
-                      details: [
-                        StepDetail(
-                          title: 'Completion Remark',
-                          description: '24-48 hours',
-                        ),
-                      ],
+                      isStepIconShow: false,
                       subSteps: [
                         SubStepData(
-                          title: 'Document Review',
-                          subTitle: 'Checking accuracy',
-                          trailingTitle: 'In Progress',
+                          title: 'Lunch Break',
+                          subTitle: '01:32:56 PM - 02:01:46 PM',
+                          trailingTitle: '28 min 50 sec',
                           status: StepStatus.pending,
-                          // isSubStepDisabled: true
-                          // isSubStepIconShow: false
-                          // isSubStepDisabled: true
-                          // statusColor: Colors.yellow
-                          // titleColor: Colors.red,
-                          // statusColor: Colors.red,
-                          // subTitleColor: Colors.red,
-                          // trailingTitleColor: Colors.red
+                          isSubStepIconShow: false,
                         ),
                         SubStepData(
-                          title: 'Approval from Supervisor',
-                          subTitle: 'Awaiting confirmation',
-                          trailingTitle: 'Pending',
-                          status: StepStatus.approved,
+                          title: 'Tea Break',
+                          subTitle: '06:05:02 PM - 06:07:51 PM',
+                          trailingTitle: '2 min 49 sec',
+                          status: StepStatus.pending,
+                          isSubStepIconShow: false,
                         ),
                       ],
+                    ),
+                    StepData(
+                      title: 'PUNCH OUT',
+                      subTitle: '06:08:39 PM',
+                      trillingTitle: '7 hour 43 min 33 sec',
+                      status: StepStatus.pending,
+                      isStepIconShow: false,
+                    ),
+                    StepData(
+                      title: 'PUNCH IN & OUT',
+                      subTitle: '06:08:39 PM',
+                      trillingTitle: '1 min 18 sec',
+                      status: StepStatus.approved,
+                      isStepIconShow: false,
                     ),
                   ],
                 ),
