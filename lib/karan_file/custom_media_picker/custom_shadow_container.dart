@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-
 import '../custom_myco_button/custom_myco_button.dart';
-
 
 class CustomShadowContainer extends StatelessWidget {
   final Widget image;

@@ -195,7 +195,7 @@ class _MainStepWidget extends StatelessWidget {
           isShadowBottomLeft: true,
           child:
               step.isStepIconShow
-                  ? Center(child: getIconWidgetForStatus(effectiveStatus))
+                  ? Center(child: getIconWidgetForStatus(step.status))
                   : const SizedBox.shrink(),
         ),
       ],
